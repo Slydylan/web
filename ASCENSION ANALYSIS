@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Great Work: An Interactive Exploration of Deification</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Parchment -->
+    <!-- Application Structure Plan: The SPA is designed around a central, tab-based navigation allowing users to switch between three distinct exploration modes: (1) A "Timeline Explorer" for chronological discovery, (2) a "Comparative Framework" for thematic analysis, (3) a "Defining Divinity" section for terminological clarity, and (4) a "Tradition Deep Dive" for detailed reading. This structure was chosen to deconstruct the dense report into user-driven discovery paths. The timeline provides historical context, the comparison view facilitates analytical understanding, the definitions section clarifies core concepts, and the deep dive offers detailed information on demand. This non-linear approach is superior to a simple scroll-through of the report, as it empowers users to focus on the aspects most interesting to them, fostering engagement and better comprehension of the complex, interconnected material. -->
+    <!-- Visualization & Content Choices: 
+        - Timeline: (Report Info: Section 8 Dates -> Goal: Show Change/Chronology -> Viz: Chart.js Scatter Plot -> Interaction: Click point to load details -> Justification: Visually represents historical emergence and overlap, more engaging than a static list. -> Library: Chart.js).
+        - Comparative Framework: (Report Info: Section 7 Table -> Goal: Compare -> Viz: Interactive HTML/CSS Cards -> Interaction: Click filter buttons to re-sort/highlight cards by theme -> Justification: Allows dynamic, multi-faceted comparison beyond a static table. -> Method: JS/Tailwind).
+        - Defining Divinity: (Report Info: All sections -> Goal: Organize/Clarify -> Viz: Styled text blocks in a grid -> Interaction: Static text -> Justification: Centralizes key term definitions for easy reference and comparison. -> Method: Tailwind).
+        - Deep Dive Sections: (Report Info: Sections 1-6 -> Goal: Inform -> Viz: Dynamically populated text blocks -> Interaction: Content loads based on clicks from timeline or cards -> Justification: Presents detailed info without overwhelming the initial view. -> Method: JS/HTML).
+        - Conceptual Diagrams (e.g., Theurgy, Neidan): (Report Info: Textual descriptions -> Goal: Organize/Explain -> Viz: Styled HTML/CSS Flexbox/Grid layouts -> Interaction: Static visual aid -> Justification: Simple, clear representation of concepts without external graphics. -> Method: Tailwind).
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #FDF6E3; /* Warm Parchment */
+            color: #584B3F; /* Muted Brown */
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Cormorant Garamond', serif;
+            color: #A57C52; /* Muted Gold */
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-button.active {
+            color: #A57C52;
+            border-bottom-color: #A57C52;
+        }
+        .nav-button:hover {
+            color: #A57C52;
+        }
+        .content-card {
+            background-color: #FFFBF0; /* Lighter Parchment */
+            border: 1px solid #EAE0C8;
+            transition: all 0.3s ease;
+        }
+        .content-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .filter-button {
+            transition: all 0.3s ease;
+            background-color: #EAE0C8;
+            color: #584B3F;
+        }
+        .filter-button:hover {
+            background-color: #A57C52;
+            color: #FFFBF0;
+        }
+        .filter-button.active {
+            background-color: #A57C52;
+            color: #FFFBF0;
+            font-weight: bold;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 md:px-8 py-8">
+        
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-bold mb-2">The Great Work</h1>
+            <p class="text-lg md:text-xl text-[#A57C52] tracking-wide">An Interactive Exploration of Historical Deification Rituals</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center border-b border-gray-200 mb-8">
+            <button id="nav-timeline" class="nav-button active text-lg px-6 py-3 font-semibold">Timeline Explorer</button>
+            <button id="nav-comparison" class="nav-button text-lg px-6 py-3 font-semibold">Comparative Framework</button>
+            <button id="nav-definitions" class="nav-button text-lg px-6 py-3 font-semibold">Defining Divinity</button>
+        </nav>
+
+        <main id="app-content">
+
+            <!-- Timeline View -->
+            <section id="timeline-view">
+                 <div class="text-center max-w-3xl mx-auto mb-8">
+                    <h2 class="text-3xl font-bold mb-2">Timeline of Traditions</h2>
+                    <p class="text-md text-[#584B3F]">This timeline visualizes the emergence and evolution of major systems aimed at achieving godhood before 1900 A.D. The horizontal axis represents time, from ancient history to the Renaissance. Click on any point to explore that tradition's core concepts and practices in the "Deep Dive" section below.</p>
+                </div>
+                <div class="chart-container mb-12">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Comparison View -->
+            <section id="comparison-view" class="hidden">
+                <div class="text-center max-w-3xl mx-auto mb-8">
+                    <h2 class="text-3xl font-bold mb-2">Comparative Framework</h2>
+                    <p class="text-md text-[#584B3F]">Analyze the different paths to divinity side-by-side. Use the filters below to organize the traditions based on their core philosophy. This allows you to see the profound patterns and divergences in how different cultures approached the Great Work. Click any card to learn more.</p>
+                </div>
+                <div id="filter-controls" class="flex flex-wrap justify-center gap-2 mb-8">
+                    <button class="filter-button active px-4 py-2 rounded-full" data-filter="all">All Traditions</button>
+                    <button class="filter-button px-4 py-2 rounded-full" data-filter="goal">Nature of Divine Goal</button>
+                    <button class="filter-button px-4 py-2 rounded-full" data-filter="method">Core Method</button>
+                    <button class="filter-button px-4 py-2 rounded-full" data-filter="worldview">View of Material World</button>
+                </div>
+                <div id="comparison-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Cards will be injected by JS -->
+                </div>
+            </section>
+            
+            <!-- Definitions View -->
+            <section id="definitions-view" class="hidden">
+                 <div class="text-center max-w-3xl mx-auto mb-8">
+                    <h2 class="text-3xl font-bold mb-2">Defining Divinity</h2>
+                    <p class="text-md text-[#584B3F]">The quest for godhood is defined by the very words used to describe it. This section explores the key terms for divine beings across different traditions, revealing how the meaning of "god" itself changes dramatically depending on cultural and philosophical context.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     <div class="content-card p-4 rounded-lg">
+                        <h4 class="text-xl font-bold mb-2">Akh</h4>
+                        <p><strong>Tradition:</strong> Ancient Egypt</p>
+                        <p class="mt-2">An *Akh* is a transfigured, immortal spirit of light that a deceased person becomes after successfully passing the trials of the afterlife. It is an effective, divine state of being, not just a ghost, capable of interacting with both gods and mortals.</p>
+                    </div>
+                    <div class="content-card p-4 rounded-lg">
+                        <h4 class="text-xl font-bold mb-2">Divus / Diva</h4>
+                        <p><strong>Tradition:</strong> Roman Imperial Cult</p>
+                        <p class="mt-2">A *Divus* (male) or *Diva* (female) is a mortal, usually an emperor, who has been officially deified by the Roman state after death. This term distinguishes them from congenital gods (*deus*). It represents a change in legal and religious *status*, not an intrinsic transformation of nature.</p>
+                    </div>
+                    <div class="content-card p-4 rounded-lg">
+                        <h4 class="text-xl font-bold mb-2">Theosis</h4>
+                        <p><strong>Tradition:</strong> Christian Mysticism</p>
+                        <p class="mt-2">Literally "divinization," *theosis* is the process of becoming like God through grace. The individual does not become a new god in essence (*ousia*), but becomes permeated by God's divine energies (*energeia*), achieving a participatory union.</p>
+                    </div>
+                    <div class="content-card p-4 rounded-lg">
+                        <h4 class="text-xl font-bold mb-2">Henosis</h4>
+                        <p><strong>Tradition:</strong> Neoplatonic Theurgy</p>
+                        <p class="mt-2">*Henosis* means "union" or "oneness." In Theurgy, it is the ultimate goal of the soul's ascent: a mystical union with The One, the ultimate, transcendent source of all reality. It represents the collapse of subject-object duality.</p>
+                    </div>
+                    <div class="content-card p-4 rounded-lg">
+                        <h4 class="text-xl font-bold mb-2">Xian</h4>
+                        <p><strong>Tradition:</strong> Taoist Alchemy</p>
+                        <p class="mt-2">A *Xian* is a Taoist Immortal or Transcendent. It is not a god in the Western sense, but a human who, through internal alchemy, has refined their essence, energy, and spirit to create an immortal spiritual body that transcends the cycle of death and returns to the Tao.</p>
+                    </div>
+                    <div class="content-card p-4 rounded-lg">
+                        <h4 class="text-xl font-bold mb-2">Elohim / Mal'akh</h4>
+                        <p><strong>Tradition:</strong> Ancient Israelite Mysticism</p>
+                        <p class="mt-2">*Elohim* is a plural term for God or divine beings (the Divine Council). A *Mal'akh* ("angel" or messenger) is one such being. Human mystics like Enoch did not become God, but were "translated" or transformed to join this heavenly assembly, taking on an angel-like nature.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Deep Dive View -->
+            <section id="deep-dive-view" class="mt-16">
+                 <div class="text-center max-w-3xl mx-auto mb-8">
+                     <h2 class="text-3xl font-bold mb-2">Deep Dive</h2>
+                     <p class="text-md text-[#584B3F]">This section provides detailed information on the selected tradition. Explore its history, key concepts, ritual methods, and unique philosophical outlook. Select a tradition from the Timeline or the Comparative Framework to begin.</p>
+                 </div>
+                <div id="deep-dive-content" class="content-card p-6 md:p-8 rounded-lg shadow-sm min-h-[300px]">
+                    <!-- Content will be injected by JS -->
+                     <div class="flex flex-col items-center justify-center h-full text-center">
+                        <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v11.494m-5.247-8.247l10.494 4.99m-10.494-4.99l10.494 4.99M12 6.253l5.247 2.497M12 6.253L6.753 8.75m10.494 4.99l-5.247 2.497m5.247-2.497l-5.247-2.497m0 0l-5.247 2.497m5.247-4.99L6.753 8.75m5.247 5.034L6.753 11.25m5.247 5.034l5.247-2.517"></path></svg>
+                        <h3 class="text-2xl font-semibold mb-2">Select a Tradition to Explore</h3>
+                        <p class="text-gray-500">Click a point on the timeline or a card in the framework above.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        const data = {
+            "sumerian": {
+                id: "sumerian",
+                name: "Sumerian Divine Kingship",
+                period: "c. 2900–2350 BCE",
+                start: -2900,
+                goal: "Post-mortem divinity for kings; temporary divinity in life.",
+                method: "Claiming divine parentage, ritual marriage to a goddess.",
+                worldview: "A world where gods and humans interact directly; kings are intermediaries.",
+                content: `
+                    <h3 class="text-2xl font-bold mb-4">Sumerian Divine Kingship: The Shepherd as God</h3>
+                    <p class="mb-4">In ancient Sumer, the line between the human and the divine was porous, especially for royalty. While most mortals faced a grim, shadowy existence in the afterlife, certain powerful kings laid claim to divinity, a status asserted through myth, ritual, and political propaganda.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">From Gilgamesh to Shulgi</h4>
+                            <p class="mb-2">The legendary hero Gilgamesh, described as "two-thirds god, one-third man," quests for physical immortality and fails, showing the limits of human ambition. However, later historical kings like Shulgi of Ur (c. 2094–2047 BCE) successfully claimed divinity during their own lifetimes, having hymns written to them as gods and receiving offerings.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">Ritual Deification</h4>
+                            <p class="mb-2">A key method for establishing this status was the ritual of the <strong>Sacred Marriage</strong>. In this annual rite, the king would symbolically marry the goddess Inanna, taking on the role of her divine consort Dumuzid. This act was believed to ensure the fertility and prosperity of the land, while simultaneously elevating the king's own nature to a divine level.</p>
+                        </div>
+                    </div>
+                `
+            },
+            "egypt": {
+                id: "egypt",
+                name: "Ancient Egypt",
+                period: "c. 2613–1500 BCE",
+                start: -2613,
+                goal: "Post-mortem transformation into a divine being (Akh).",
+                method: "Funerary texts, mummification, and state ritual.",
+                worldview: "A necessary vessel for the afterlife; a stage for the soul's journey.",
+                content: `
+                    <h3 class="text-2xl font-bold mb-4">Ancient Egypt: Engineering Immortality</h3>
+                    <p class="mb-4">Ancient Egyptian civilization presents a unique model where deification was a post-mortem objective to be meticulously engineered through a combination of ritual, magic, and textual mastery. Here, divinity was not a matter of grace or spontaneous insight, but an outcome achieved through the correct application of a sacred technology.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">The Royal Monopoly & Its Democratization</h4>
+                            <p class="mb-2">Initially, the path to godhood was an exclusive royal prerogative, detailed in the <strong>Pyramid Texts (c. 2613-2181 BCE)</strong>. These magical spells ensured the pharaoh's transformation and ascent to join the sun god Ra. This monopoly later eroded, with the <strong>Coffin Texts (c. 2025-1700 BCE)</strong> extending this potential to nobles. The process culminated with the <strong>Book of the Dead (c. 1500 BCE)</strong>, making a divine afterlife accessible to anyone with the means to purchase the requisite spells.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">The Mechanics of Transformation</h4>
+                            <p class="mb-2">The Egyptian path was highly procedural. It required meticulous <strong>mummification</strong> to preserve the body, the <strong>"Opening of the Mouth"</strong> ceremony to reanimate the senses, and the use of funerary texts as a guide. A key trial was the <strong>"Weighing of the Heart"</strong> against the feather of Ma'at (truth). Only a morally pure heart could pass, allowing the soul to be transfigured into an <strong>Akh</strong>, a divine spirit of light.</p>
+                        </div>
+                    </div>
+                `
+            },
+            "vedic": {
+                id: "vedic",
+                name: "Vedic Ritual & Philosophy",
+                period: "c. 1500–500 BCE",
+                start: -1500,
+                goal: "Attaining immortality (amṛta); realizing identity with Brahman.",
+                method: "Fire sacrifice (yajña), Soma ritual, Upanishadic contemplation.",
+                worldview: "A cosmos sustained by ritual action; reality as a unified whole (Brahman).",
+                content: `
+                    <h3 class="text-2xl font-bold mb-4">Vedic India: Immortality through Ritual and Insight</h3>
+                    <p class="mb-4">In the early Vedic period, the concept of deification was tied to achieving *amṛta* (immortality) and joining the world of the gods (*devas*) through the precise performance of fire sacrifices (*yajña*). Later, in the Upanishadic era, the goal shifted inward to the philosophical realization of the identity between the individual soul (*Atman*) and the ultimate reality (*Brahman*).</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">Soma: The Drink of the Gods</h4>
+                            <p class="mb-2">The Rigveda speaks extensively of <strong>Soma</strong>, a plant and a drink prepared from it that was offered to the gods and consumed by priests. This entheogenic substance was believed to grant visionary experiences, divine power, and a form of immortality, temporarily elevating the consumer to a divine state. The mortal who drank Soma "has drunk the gods."</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">The Great Upanishadic Sayings</h4>
+                            <p class="mb-2">The Upanishads reframed the quest internally. The ultimate "deification" became the direct realization of the truth expressed in the *Mahāvākyas* (Great Sayings), such as <strong>"Tat Tvam Asi"</strong> ("That Thou Art") and <strong>"Aham Brahmāsmi"</strong> ("I am Brahman"). Here, divinity is not something to become, but a fundamental truth of one's own being to be uncovered through self-knowledge.</p>
+                        </div>
+                    </div>
+                `
+            },
+             "israelite": {
+                id: "israelite",
+                name: "Ancient Israelite Mysticism",
+                period: "c. 900–500 BCE",
+                start: -900,
+                goal: "Mystical ascent, transformation into an angelic being.",
+                method: "Prophetic ecstasy, divine favor, righteousness.",
+                worldview: "A world ruled by one transcendent God, with a heavenly court of angels.",
+                content: `
+                    <h3 class="text-2xl font-bold mb-4">Ancient Israelite Mysticism: Walking with God</h3>
+                    <p class="mb-4">Within the strict monotheism of ancient Israel, a human could not become God. However, certain righteous figures were believed to have transcended the mortal condition not by becoming divine, but by being taken directly into the divine realm and transformed, bypassing death entirely.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">The Translation of Enoch & Elijah</h4>
+                            <p class="mb-2">The archetypal examples are Enoch, of whom it is said "he walked with God: and he was not; for God took him" (Genesis 5:24), and the prophet Elijah, who was taken up to heaven in a chariot of fire (2 Kings 2:11). Later traditions, particularly in the Books of Enoch, elaborated that Enoch was transformed into the supreme angel Metatron, the celestial scribe.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">Joining the Divine Council</h4>
+                            <p class="mb-2">This "apotheosis" is not becoming God, but a transformation into a celestial being, an angel (*mal'akh*), and joining the heavenly court or Divine Council (*bene elohim*). It is an elevation and immortalization through divine favor, representing the ultimate reward for a life of exceptional piety and closeness to God.</p>
+                        </div>
+                    </div>
+                `
+            },
+            "rome": {
+                id: "rome",
+                name: "Roman Imperial Cult",
+                period: "c. 42 BCE onwards",
+                start: -42,
+                goal: "Posthumous elevation to state-sanctioned divinity (Divus).",
+                method: "State ritual (consecratio), Senate decree.",
+                worldview: "The stage for political power and imperial legacy.",
+                content: `
+                    <h3 class="text-2xl font-bold mb-4">Roman Imperial Cult: Deification as Statecraft</h3>
+                    <p class="mb-4">Following the assassination of Julius Caesar in 44 BCE, his successor Octavian secured his posthumous deification in 42 BCE. This act institutionalized apotheosis as a powerful tool of the Roman state, used to legitimize emperors, ensure dynastic succession, and unify a diverse empire under a shared religious-political framework.</p>
+                     <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">The Ritual of Consecratio</h4>
+                            <p class="mb-2">The Roman process of deification, known as <strong>consecratio</strong>, was a formal state affair. It required a decree from the Senate and popular consent. The public ceremony's centerpiece was the release of an eagle from the deceased emperor's funeral pyre, symbolizing the soul's ascent to the heavens. Deified individuals were given the title <strong>Divus</strong> (or <strong>Diva</strong>), distinguishing them from congenital gods.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">A Status, Not a State</h4>
+                            <p class="mb-2">Roman apotheosis was fundamentally a change in <strong>legal and religious status</strong>. It was a political honor bestowed after death, not a mystical transformation of one's inner nature during life. This model highlights a key distinction in deification: godhood as a conferred status versus an achieved state of being.</p>
+                        </div>
+                    </div>
+                `
+            },
+            "theosis": {
+                id: "theosis",
+                name: "Christian Theosis",
+                period: "c. 150-363 CE",
+                start: 150,
+                goal: "Participatory union with God's uncreated energies.",
+                method: "Asceticism, prayer, sacraments (katharsis, theoria).",
+                worldview: "An arena for purification and spiritual struggle; God's creation.",
+                 content: `
+                    <h3 class="text-2xl font-bold mb-4">Christian Theosis: Participation in the Divine Nature</h3>
+                    <p class="mb-4">In stark contrast to pagan apotheosis, Christian theology developed the concept of <strong>theosis</strong> (or divinization). Within a strictly monotheistic framework, it is impossible for a human to become *a god*. Theosis instead refers to a transformative process of achieving likeness to or union with the one God through grace. It is the core purpose of human life in Eastern Orthodox traditions.</p>
+                     <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">The Path of Grace</h4>
+                            <p class="mb-2">The foundation of theosis is the Incarnation of Christ, which united divine and human natures. The path involves a spiritual journey of <strong>katharsis</strong> (purification from passions), <strong>theoria</strong> (illumination or spiritual vision of God), and finally <strong>theosis</strong> itself (perfect union). This is encapsulated by the famous dictum: "God became man that man might become God."</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">The Sword in the Fire</h4>
+                            <p class="mb-2">A key analogy used to explain this mystery is that of an iron sword placed in a fire. The sword remains fully iron in its essence (<em>ousia</em>) but takes on the properties, or energies (<em>energeia</em>), of the fire. Similarly, the deified human remains fully human but becomes permeated by the uncreated divine energies of God.</p>
+                        </div>
+                    </div>
+                `
+            },
+            "gnosticism": {
+                id: "gnosticism",
+                name: "Gnosticism & Hermeticism",
+                period: "c. 100–300 CE",
+                start: 100,
+                goal: "Escape from matter; realization of innate divinity.",
+                method: "Gnosis (revealed secret knowledge), asceticism.",
+                worldview: "An evil prison (Gnosticism) or a beautiful trap (Hermeticism).",
+                content: `
+                    <h3 class="text-2xl font-bold mb-4">Gnosticism & Hermeticism: Reclaiming a Lost Divinity</h3>
+                    <p class="mb-4">Emerging in the Hellenistic world, these traditions taught that humanity is inherently divine but has become trapped and ignorant of its true nature. The path to deification is therefore not one of becoming something new, but of <strong>remembering and liberating</strong> the divine spark within through <strong>gnosis</strong>, or secret, salvific knowledge.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                           <h4 class="text-xl font-semibold mb-2">Radical Gnosticism: Escape from Prison</h4>
+                            <p class="mb-2">Many Gnostic systems viewed the material world as a cosmic error, a prison created by an inferior, malevolent creator god (the Demiurge). Humans are divine spirits trapped in flesh. Salvation comes from a redeemer who brings the gnosis needed to bypass the cosmic jailers (Archons) and return the spirit to the true divine realm, the <strong>Pleroma</strong>.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">Hermeticism: Awakening the Mortal God</h4>
+                            <p class="mb-2">Hermeticism held a more optimistic view, seeing the world as a beautiful, though ensnaring, creation. The human "fall" was forgetting one's divine origin after falling in love with one's own reflection in Nature. The goal is to "become God" by realizing one's deathless identity as Divine Consciousness through self-knowledge, often depicted as a mystical rebirth and ascent through the planetary spheres.</p>
+                        </div>
+                    </div>
+                `
+            },
+            "theurgy": {
+                id: "theurgy",
+                name: "Neoplatonic Theurgy",
+                period: "c. 245–325 CE",
+                start: 245,
+                goal: "Henosis (union) with the One; deification of the soul.",
+                method: "Rituals using divine 'tokens' (sunthemata), invocation.",
+                worldview: "A divine emanation containing links to the gods.",
+                content: `
+                    <h3 class="text-2xl font-bold mb-4">Neoplatonic Theurgy: The Philosopher's Ascent</h3>
+                    <p class="mb-4">Theurgy, meaning "divine work," was a system developed by the philosopher Iamblichus that blended Neoplatonic philosophy with ritual magic. He argued that pure intellect was not enough to reach the transcendent source of reality, The One. A ritualized philosophy was necessary to bridge the gap between the human and the divine.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">A Cosmos of Signatures</h4>
+                            <p class="mb-2">Theurgy operates on the principle that the material world is not evil, but is the final stage of divine emanation. It is filled with <strong>sunthemata</strong>, or divine "signatures," embedded in specific plants, stones, and sounds. The theurgist uses these material symbols as sympathetic links to attract and commune with the corresponding divine power.</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">The Rituals of Union</h4>
+                            <p class="mb-2">Theurgic rituals were designed to purify the soul and elevate it. Rites of Invitation (<strong>telestics</strong>) aimed to draw a divine presence into the material world, such as animating a statue. Rites of Elevation (<strong>anagoge</strong>) focused on the ascent of the practitioner's own soul through the cosmic spheres to achieve <strong>henosis</strong>, or mystical union.</p>
+                        </div>
+                    </div>
+                `
+            },
+            "taoism": {
+                id: "taoism",
+                name: "Taoist Internal Alchemy",
+                period: "c. 618-907 CE",
+                start: 618,
+                goal: "Creation of an immortal spiritual body (Xian); return to the Tao.",
+                method: "Internal psycho-physiological alchemy (refining Jing, Qi, Shen).",
+                worldview: "A laboratory for internal transformation.",
+                content: `
+                    <h3 class="text-2xl font-bold mb-4">Taoist Neidan: Forging the Immortal Self</h3>
+                    <p class="mb-4">The ultimate goal of Taoist esoteric practice is to become a <strong>Xian</strong>, an immortal being. This pursuit shifted from early, dangerous External Alchemy (Waidan) to <strong>Neidan</strong> (Internal Alchemy), where the practitioner's own body becomes the alchemical laboratory for creating a refined, immortal spiritual body.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">The Three Treasures</h4>
+                            <p class="mb-2">The raw materials for this inner work are the "Three Treasures" inherent in every human being: <strong>Jing</strong> (generative essence), <strong>Qi</strong> (vital energy/breath), and <strong>Shen</strong> (spirit/consciousness). The process is a sequential, psycho-physiological transformation through meditation, breath control, and lifestyle moderation.</p>
+                        </div>
+                        <div class="flex flex-col items-center justify-center p-4 bg-[#FDF6E3] rounded-lg">
+                            <h4 class="text-xl font-semibold mb-2">The Alchemical Process</h4>
+                            <div class="text-center font-semibold">
+                                <div class="p-2">Jing (Essence)</div>
+                                <div class="text-2xl transform rotate-90">➔</div>
+                                <div class="p-2">Qi (Vital Energy)</div>
+                                <div class="text-2xl transform rotate-90">➔</div>
+                                <div class="p-2">Shen (Spirit)</div>
+                                <div class="text-2xl transform rotate-90">➔</div>
+                                <div class="p-2">Return to the Tao</div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            "tantra": {
+                id: "tantra",
+                name: "Hindu & Buddhist Tantra",
+                period: "c. 500-700 CE",
+                start: 500,
+                goal: "Realization of non-duality and one's divine nature.",
+                method: "Deity Yoga (visualization, mantra, identification).",
+                worldview: "A manifestation of the Divine (Hinduism) or an illusory appearance (Buddhism).",
+                content: `
+                    <h3 class="text-2xl font-bold mb-4">Tantra: Realizing the Divine Within</h3>
+                    <p class="mb-4">In the Tantric traditions of Hinduism and Buddhism, the goal is less about "becoming a god" and more about realizing a non-dual reality where the distinction between self and the ultimate dissolves. The primary method for this is a sophisticated practice of consciousness known as <strong>Deity Yoga</strong>.</p>
+                     <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                           <h4 class="text-xl font-semibold mb-2">Hindu Tantra: "Becoming Shiva to Worship Shiva"</h4>
+                            <p class="mb-2">Hindu Tantra views the universe as the divine play (<em>lila</em>) of a single Consciousness. The practitioner chooses a deity (<em>ishta-devata</em>) and, through mantra and visualization, progressively identifies with it. The goal is to realize that one's own consciousness is an expression of the Divine, as encapsulated by the maxim: "Having become Shiva, one should worship Shiva."</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">Buddhist Vajrayana: Realizing Emptiness</h4>
+                            <p class="mb-2">Buddhist Tantra (Vajrayana) employs Deity Yoga within the framework of Emptiness (<em>Shunyata</em>) and No-Self (<em>Anatman</em>). Visualizing oneself as an enlightened being (<em>yidam</em>) is a skillful means to deconstruct the illusion of a solid, separate self and directly realize the empty, luminous nature of mind and all phenomena.</p>
+                        </div>
+                    </div>
+                `
+            },
+            "renaissance": {
+                id: "renaissance",
+                name: "Renaissance Magic",
+                period: "c. 1433–1494 CE",
+                start: 1433,
+                goal: "Ascent of the soul to achieve union with God.",
+                method: "Syncretic magic: Natural (astrology, talismans) & Kabbalistic.",
+                worldview: "An interconnected system of sympathies, infused with spiritus.",
+                content: `
+                    <h3 class="text-2xl font-bold mb-4">Renaissance Magic: The Grand Synthesis</h3>
+                    <p class="mb-4">The Italian Renaissance magi, like Marsilio Ficino and Pico della Mirandola, sought to restore a primordial wisdom or <strong>prisca theologia</strong>. They created a universal system by synthesizing Neoplatonic philosophy, Hermeticism, and Jewish Kabbalah into a framework they saw as compatible with Christianity, elevating magic to the pinnacle of natural philosophy.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-xl font-semibold mb-2">Ficino's Natural Magic</h4>
+                            <p class="mb-2">Marsilio Ficino's magic was therapeutic and priestly. It aimed to harmonize the individual (microcosm) with the cosmos (macrocosm) by using astrologically timed talismans, music, and colors to attract celestial influences through the <strong>spiritus</strong>, a vital force bridging the heavens and the soul. The goal was to prepare the soul for divine ascent.</p>
+                        </div>
+                        <div>
+                           <h4 class="text-xl font-semibold mb-2">Pico's Angelic Magic</h4>
+                            <p class="mb-2">Pico della Mirandola found natural magic incomplete. He incorporated practical Kabbalah to create a more powerful "angelic" magic. This sought not just to harmonize with cosmic forces, but to <strong>command</strong> them by mastering the secret names of angels and divine powers. This marks a shift from a receptive magic of harmony to an active magic of dominion.</p>
+                        </div>
+                    </div>
+                `
+            }
+        };
+
+        const traditions = Object.values(data);
+        const navTimeline = document.getElementById('nav-timeline');
+        const navComparison = document.getElementById('nav-comparison');
+        const navDefinitions = document.getElementById('nav-definitions');
+        
+        const timelineView = document.getElementById('timeline-view');
+        const comparisonView = document.getElementById('comparison-view');
+        const definitionsView = document.getElementById('definitions-view');
+
+        const deepDiveContent = document.getElementById('deep-dive-content');
+        const comparisonGrid = document.getElementById('comparison-grid');
+        const filterControls = document.getElementById('filter-controls');
+
+        let activeTradition = null;
+        let chart = null;
+
+        function showView(viewToShow) {
+            [timelineView, comparisonView, definitionsView].forEach(view => {
+                if (view.id === viewToShow) {
+                    view.classList.remove('hidden');
+                } else {
+                    view.classList.add('hidden');
+                }
+            });
+
+             [navTimeline, navComparison, navDefinitions].forEach(nav => {
+                if (nav.id === `nav-${viewToShow.split('-')[0]}`) {
+                    nav.classList.add('active');
+                } else {
+                    nav.classList.remove('active');
+                }
+            });
+        }
+
+
+        function showDeepDive(traditionId) {
+            const tradition = data[traditionId];
+            if (!tradition) return;
+
+            activeTradition = traditionId;
+            deepDiveContent.innerHTML = tradition.content;
+            
+            deepDiveContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            document.querySelectorAll('#comparison-grid .content-card').forEach(card => {
+                card.classList.remove('ring-2', 'ring-offset-2', 'ring-[#A57C52]');
+            });
+            const activeCard = document.querySelector(`#comparison-grid .content-card[data-id="${traditionId}"]`);
+            if (activeCard) {
+                activeCard.classList.add('ring-2', 'ring-offset-2', 'ring-[#A57C52]');
+            }
+
+            updateTimelineHighlight();
+        }
+
+        function createComparisonCards() {
+            comparisonGrid.innerHTML = '';
+            traditions.sort((a,b) => a.start - b.start).forEach(t => {
+                const card = document.createElement('div');
+                card.className = "content-card p-4 rounded-lg shadow-sm flex flex-col cursor-pointer h-full";
+                card.dataset.id = t.id;
+                card.dataset.goal = t.goal;
+                card.dataset.method = t.method;
+                card.dataset.worldview = t.worldview;
+
+                card.innerHTML = `
+                    <h4 class="text-xl font-bold mb-2">${t.name}</h4>
+                    <p class="text-sm text-gray-500 mb-3">${t.period}</p>
+                    <div class="text-sm space-y-2 mt-auto">
+                        <p><strong class="text-[#A57C52]">Goal:</strong> <span class="goal-text">${t.goal}</span></p>
+                        <p><strong class="text-[#A57C52]">Method:</strong> <span class="method-text">${t.method}</span></p>
+                        <p><strong class="text-[#A57C52]">Worldview:</strong> <span class="worldview-text">${t.worldview}</span></p>
+                    </div>
+                `;
+                card.addEventListener('click', () => showDeepDive(t.id));
+                comparisonGrid.appendChild(card);
+            });
+        }
+        
+        function filterCards(filter) {
+            document.querySelectorAll('#filter-controls button').forEach(b => b.classList.remove('active'));
+            document.querySelector(`#filter-controls button[data-filter="${filter}"]`).classList.add('active');
+
+            const allCards = Array.from(comparisonGrid.children);
+            
+            allCards.forEach(card => {
+                card.style.order = 0;
+                card.querySelectorAll('p').forEach(p => p.classList.remove('font-bold', 'text-lg', 'bg-yellow-100', 'p-1', 'rounded'));
+            });
+
+            if (filter !== 'all') {
+                allCards.forEach(card => {
+                    const targetText = card.querySelector(`.${filter}-text`);
+                    if (targetText) {
+                        targetText.parentElement.classList.add('font-bold', 'text-lg');
+                        targetText.parentElement.style.order = -1;
+                        targetText.classList.add('bg-yellow-100', 'p-1', 'rounded');
+                    }
+                });
+            }
+        }
+
+
+        function createTimeline() {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            const timelineData = traditions.map(t => ({
+                x: t.start,
+                y: Math.random() * 80 + 10,
+                r: 12, // radius
+                tradition: t
+            }));
+
+            chart = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'Traditions',
+                        data: timelineData,
+                        backgroundColor: 'rgba(165, 124, 82, 0.6)',
+                        borderColor: 'rgba(165, 124, 82, 1)',
+                        borderWidth: 2,
+                        hoverRadius: 15,
+                        hoverBorderWidth: 3,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Year (BCE / CE)',
+                                font: {
+                                    size: 14,
+                                    family: 'Lato'
+                                }
+                            },
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    return value < 0 ? `${Math.abs(value)} BCE` : `${value} CE`;
+                                }
+                            }
+                        },
+                        y: {
+                            display: false,
+                            min: 0,
+                            max: 100
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const dataPoint = context.raw;
+                                    return `${dataPoint.tradition.name}: ${dataPoint.tradition.period}`;
+                                }
+                            },
+                             bodyFont: {
+                                size: 14,
+                                family: 'Lato'
+                            },
+                            titleFont: {
+                                size: 16,
+                                family: 'Cormorant Garamond'
+                            }
+                        }
+                    },
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            const elementIndex = elements[0].index;
+                            const traditionId = chart.data.datasets[0].data[elementIndex].tradition.id;
+                            showDeepDive(traditionId);
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateTimelineHighlight() {
+            if (!chart) return;
+            chart.data.datasets[0].backgroundColor = chart.data.datasets[0].data.map(d => 
+                d.tradition.id === activeTradition ? 'rgba(165, 124, 82, 1)' : 'rgba(165, 124, 82, 0.5)'
+            );
+             chart.data.datasets[0].radius = chart.data.datasets[0].data.map(d => 
+                d.tradition.id === activeTradition ? 18 : 12
+            );
+            chart.update();
+        }
+
+        navTimeline.addEventListener('click', () => showView('timeline-view'));
+        navComparison.addEventListener('click', () => showView('comparison-view'));
+        navDefinitions.addEventListener('click', () => showView('definitions-view'));
+        
+        filterControls.addEventListener('click', (e) => {
+            if (e.target.tagName === 'BUTTON') {
+                filterCards(e.target.dataset.filter);
+            }
+        });
+
+        window.onload = () => {
+            createTimeline();
+            createComparisonCards();
+            showDeepDive('sumerian');
+            showView('timeline-view');
+        };
+
+    </script>
+</body>
+</html>
