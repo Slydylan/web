@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Chimera: A Theoretical Framework for the Biophysics of Ascension</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8f5f0;
+            --text-color: #3a3a3a;
+            --primary-color: #0d2c4a; /* Deeper Navy Blue */
+            --accent-color: #c5a05b; /* Richer Gold */
+            --card-bg: #ffffff;
+            --card-border: #e0e0e0;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Merriweather', serif;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+        .main-nav {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+            border-bottom: 3px solid transparent;
+            padding-bottom: 0.5rem;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--accent-color);
+        }
+        .content-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .content-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+        }
+        .accordion-button {
+            transition: background-color 0.3s;
+        }
+        .accordion-button.open {
+            background-color: #eef2ff;
+            border-bottom: 1px solid var(--card-border);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        blockquote {
+            border-left: 4px solid var(--accent-color);
+            padding-left: 1rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #555;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            border: 1px solid var(--card-border);
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f5f9;
+            color: var(--primary-color);
+            font-family: 'Merriweather', serif;
+        }
+        .diagram {
+            background-color: #f8fafc;
+            border: 1px dashed var(--accent-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header and Navigation -->
+    <header class="main-nav sticky top-0 z-50 shadow-md">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-primary-color">Project Chimera</h1>
+            <div class="hidden md:flex space-x-6 lg:space-x-8">
+                <a href="#introduction" class="nav-link text-gray-600 font-semibold">Intro</a>
+                <a href="#part1" class="nav-link text-gray-600 font-semibold">Part I</a>
+                <a href="#part2" class="nav-link text-gray-600 font-semibold">Part II</a>
+                <a href="#part3" class="nav-link text-gray-600 font-semibold">Part III</a>
+                <a href="#part4" class="nav-link text-gray-600 font-semibold">Part IV</a>
+                <a href="#part5" class="nav-link text-gray-600 font-semibold">Part V</a>
+                <a href="#glossary" class="nav-link text-gray-600 font-semibold">Glossary</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pt-2 pb-4 space-y-2">
+            <a href="#introduction" class="block nav-link text-gray-600 font-semibold">Introduction</a>
+            <a href="#part1" class="block nav-link text-gray-600 font-semibold">Part I: Quantum Biological Model</a>
+            <a href="#part2" class="block nav-link text-gray-600 font-semibold">Part II: Cellular Transformation</a>
+            <a href="#part3" class="block nav-link text-gray-600 font-semibold">Part III: Neurophysics of Influence</a>
+            <a href="#part4" class="block nav-link text-gray-600 font-semibold">Part IV: Catalysts & Accelerants</a>
+            <a href="#part5" class="block nav-link text-gray-600 font-semibold">Part V: Integrated Model</a>
+            <a href="#glossary" class="block nav-link text-gray-600 font-semibold">Glossary of Terms</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <!-- Introduction -->
+        <section id="introduction" class="mb-24 text-center">
+            <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-tight">Project Chimera</h1>
+            <h2 class="text-2xl text-gray-600 mb-8">A Theoretical Framework for the Biophysics of Ascension</h2>
+            <p class="max-w-4xl mx-auto text-lg leading-relaxed">
+                This report presents a speculative, interdisciplinary framework for understanding the phenomenon of "ascension" as a biophysical process. Moving beyond mythological or purely metaphysical interpretations, <strong>Project Chimera</strong> hypothesizes that ascension represents a quantifiable state-transition of a biological organism, from a baseline human state governed by classical biochemistry to a "divine" state characterized by macroscopic quantum coherence.
+            </p>
+        </section>
+
+        <!-- Part I -->
+        <section id="part1" class="mb-20">
+            <h2 class="text-4xl font-bold border-b-2 border-accent-color pb-2 mb-8">Part I: The Spectrum of Being - The Quantum Biological Model</h2>
+            <div class="space-y-6">
+                <div class="content-card p-6">
+                    <p class="text-lg leading-relaxed">The central premise of this investigation is that the human body is not merely a biochemical machine but a complex quantum coherent system. The "spectrum of being" describes the range of functional states available to this system, with the baseline human at one end and the fully actualized <strong>Corpus Divinum</strong> at the other. The conventional biochemical model is insufficient to explain anomalous phenomena, while a Quantum Biological Model (QBM) provides a more robust framework.</p>
+                </div>
+                <!-- Comparison Table -->
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Classical Biochemical Model</th>
+                                <th>Quantum Biological Model (QBM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Primary Driver</strong></td>
+                                <td>Chemical Reactions (ATP, enzymes)</td>
+                                <td>Quantum Coherence & Information Fields</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cellular Communication</strong></td>
+                                <td>Nerve impulses, hormones</td>
+                                <td>Biophoton exchange, quantum entanglement</td>
+                            </tr>
+                            <tr>
+                                <td><strong>DNA Function</strong></td>
+                                <td>Genetic blueprint for protein synthesis</td>
+                                <td>Blueprint + Fractal Antenna for environmental information</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Consciousness</strong></td>
+                                <td>Epiphenomenon of neural chemistry</td>
+                                <td>Fundamental property, potentially non-local</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Health/Disease</strong></td>
+                                <td>Chemical imbalance, pathogen invasion</td>
+                                <td>Coherence/Incoherence of the biofield</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ascension Potential</strong></td>
+                                <td>Impossible; violates biological laws</td>
+                                <td>The ultimate expression of system-wide coherence</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part II -->
+        <section id="part2" class="mb-20">
+            <h2 class="text-4xl font-bold border-b-2 border-accent-color pb-2 mb-8">Part II: The Cellular & Genetic Substrate of Transformation</h2>
+             <p class="text-lg mb-8 leading-relaxed">Under the QBM, ascension is not a metaphysical event but a cellular and genetic upgrade. This transformation can be modeled through three interconnected systems: the biophoton field, mitochondrial reprogramming, and the DNA-antenna.</p>
+            <div class="space-y-6">
+                 <div class="content-card">
+                    <button class="accordion-button w-full p-6 text-left flex justify-between items-center">
+                        <h3 class="text-2xl font-bold">1. The Biophoton Field: The Body of Light</h3>
+                        <svg class="accordion-icon w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content px-6 py-6 space-y-4">
+                        <p>Every living cell emits ultra-weak photons known as <strong>biophotons</strong>. In a baseline human, this light is relatively chaotic. Ascension entails a process of organizing this light into a coherent, laser-like field. At a critical threshold of coherence, the biofield may undergo a phase transition, becoming the primary organizing principle of biology. The being transitions from a matter-based organism that emits light to a light-based organism that sustains matter.</p>
+                    </div>
+                </div>
+                 <div class="content-card">
+                    <button class="accordion-button w-full p-6 text-left flex justify-between items-center">
+                        <h3 class="text-2xl font-bold">2. Mitochondrial Reprogramming: The Divine Engine</h3>
+                        <svg class="accordion-icon w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content px-6 py-6 space-y-4">
+                        <p>Ascension requires a massive upgrade in cellular energy production. As quantum organelles, mitochondria may be able to directly transduce energy from the <strong>Zero-Point Field (ZPF)</strong>. The efficiency of mitochondrial function is a primary rate-limiter for transformation. Optimizing mitochondrial health could speed up the process by providing the necessary energy for the system to re-organize itself at a higher level of complexity.</p>
+                    </div>
+                </div>
+                 <div class="content-card">
+                    <button class="accordion-button w-full p-6 text-left flex justify-between items-center">
+                        <h3 class="text-2xl font-bold">3. The DNA-Antenna: The Ascension Blueprint</h3>
+                        <svg class="accordion-icon w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content px-6 py-6 space-y-4">
+                        <p>So-called "junk DNA" (non-coding DNA) is hypothesized to function as a <strong>fractal antenna</strong>, receiving energetic and informational signals. Latent within this DNA may be the "ascension blueprint." This blueprint is activated when the body's biofield reaches a specific frequency and coherence, triggering epigenetic changes that reprogram cellular function towards the ascended state.</p>
+                    </div>
+                </div>
+                <div class="diagram mt-8">
+                    <h4 class="text-xl font-bold mb-4 text-center">Diagram: Quantum Cell Transformation Model</h4>
+                    <pre class="text-center text-sm leading-loose">
+  External Information & Energy (ZPF, Biofield)
+                  |
+                  v (Transduction)
++-------------------+ +---------------------+
+| DNA Fractal Antenna | | Mitochondrial Engine|
+| (Receives Blueprint)| |(Powers Transformation) |
++-------------------+ +---------------------+
+         |                      |
+         v (Epigenetic Signal)  v (Energy Output)
++-------------------------------------------+
+|      Cellular Matrix & Biophoton Field    |
+| (Degree of Coherence determines state)    |
++-------------------------------------------+
+                  |
+                  v
++-------------------------------------------+
+| System State: Baseline Human <--> Corpus Divinum |
++-------------------------------------------+
+                    </pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part III -->
+        <section id="part3" class="mb-20">
+            <h2 class="text-4xl font-bold border-b-2 border-accent-color pb-2 mb-8">Part III: The Neurophysics of Reality Influence</h2>
+            <p class="text-lg mb-8 leading-relaxed">The abilities ascribed to divine figures require a model where consciousness can directly interact with the physical world. This is explored through the concepts of the brain as a coherent wave generator and the pineal gland as a quantum transducer.</p>
+             <div class="grid md:grid-cols-2 gap-8">
+                <div class="content-card p-6">
+                    <h3 class="text-2xl font-bold mb-2">The Brain as a Coherent Wave Generator</h3>
+                    <p>In highly coherent <strong>Gamma brainwave</strong> states, the brain's electromagnetic field may become powerful enough to couple with the quantum vacuum (ZPF). A highly coherent, intention-focused mind could theoretically impress a pattern onto this field, causing probabilities to collapse in a way that aligns with the intention, resulting in observable psychokinetic effects.</p>
+                </div>
+                <div class="content-card p-6">
+                    <h3 class="text-2xl font-bold mb-2">The Pineal Gland: The Quantum Transducer</h3>
+                    <p>The pineal gland, containing piezoelectric calcite microcrystals, is uniquely positioned to be a biological transducer. It could convert non-local information into neurochemical signals that the brain interprets as intuition or visions. Endogenous <strong>DMT</strong> production within the pineal may be the chemical key that activates this transducer function, the "Third Eye".</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part IV -->
+        <section id="part4" class="mb-20">
+            <h2 class="text-4xl font-bold border-b-2 border-accent-color pb-2 mb-8">Part IV: Catalysts, Accelerants, and False Starts</h2>
+            <p class="text-lg mb-8 leading-relaxed">If ascension is a natural potentiality, certain substances may act as catalysts. We must differentiate between foundational "substrate builders" that prepare the body, and transient "state activators" that offer a preview of the ascended state.</p>
+            <div class="content-card mb-8">
+                <button class="accordion-button w-full p-6 text-left flex justify-between items-center">
+                    <h3 class="text-2xl font-bold">Substrate Builders: ORMUS & Shilajit</h3>
+                    <svg class="accordion-icon w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content px-6 py-6 space-y-4">
+                    <p><strong>Monatomic Gold (ORMUS)</strong> is theorized to introduce biological superconductivity, eliminating energetic resistance and massively amplifying the body's biofield. It "upgrades the wiring."</p>
+                    <p><strong>Shilajit</strong>, rich in fulvic acid and ionic minerals, acts as a supreme cellular nutrient and mitochondrial optimizer. It provides the "bricks and mortar" for transformation.</p>
+                </div>
+            </div>
+            <div class="content-card">
+                <button class="accordion-button w-full p-6 text-left flex justify-between items-center">
+                    <h3 class="text-2xl font-bold">State Activators & The "False Start" Hypothesis: DMT</h3>
+                    <svg class="accordion-icon w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content px-6 py-6 space-y-4">
+                     <p><strong>DMT</strong> appears to forcibly activate the pineal transducer, giving the user a temporary perceptual preview of a higher-dimensional reality. This is a "false start" because the user experiences the perception of an ascended state without having built the stable energetic substrate to support it. The experience is transient and can be energetically destabilizing if the foundational work has not been done. The consistency of transpersonal experiences suggests it triggers a real, pre-existing neurological pathway, rather than being a mere placebo effect.</p>
+                     <div class="diagram mt-6">
+                        <h4 class="text-xl font-bold mb-4 text-center">Diagram: DMT Chain Reaction Model</h4>
+                        <pre class="text-center text-sm leading-loose">
+DMT Input -> Pineal Activation -> Gamma State
+    ^                                   |
+    |                                   v
+Return to Base -> Transient State <- ZPF Coupling
+(No Stable Substrate)
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Part V -->
+        <section id="part5" class="mb-20">
+            <h2 class="text-4xl font-bold border-b-2 border-accent-color pb-2 mb-8">Part V: The Integrated Model & The Corpus Divinum</h2>
+            <p class="text-lg mb-8 leading-relaxed">Combining these elements, we can propose a final integrated model for ascension as a self-reinforcing feedback loop where consciousness and biology co-evolve, culminating in the endpoint of the spectrum: the Corpus Divinum.</p>
+            <div class="content-card border-2 border-accent-color">
+                <button class="accordion-button open w-full p-6 text-left flex justify-between items-center">
+                    <h3 class="text-2xl font-bold text-accent-color">Profile of the Corpus Divinum</h3>
+                    <svg class="accordion-icon w-6 h-6 transform transition-transform rotate-180 text-accent-color" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content px-6 py-6" style="max-height: 1000px;">
+                    <ul class="list-disc list-inside space-y-4 text-base leading-relaxed">
+                        <li><strong>Physiology & Regeneration:</strong> Structure is a self-sustaining, macroscopic quantum coherent field of biophotons. Physical matter is subordinate to this energy field. DNA acts as a quantum antenna for instantaneous adaptation and regeneration. The body is effectively immortal, not subject to entropy or aging.</li>
+                        <li><strong>Energetics:</strong> Metabolism is direct energy transduction from the Zero-Point Field, making it a completely self-sufficient system. Its high "vibrational state" (coherence) renders it impervious to lower-vibrational influences like toxins or pathogens.</li>
+                        <li><strong>Consciousness & Perception:</strong> Consciousness is fully non-local and holographic. The mind is a coherent node within the universal consciousness field. Perception transcends the five senses, directly interpreting the quantum information field of the universe.</li>
+                        <li><strong>Abilities & Manifestations:</strong> The biophysical state enables translocation (quantum tunneling), transmutation of form (controlling wave-particle duality), telepathic communication (direct information exchange via the quantum field), and co-creation (impressing will upon the quantum vacuum to precipitate energy and form).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Glossary -->
+        <section id="glossary" class="mb-20">
+            <h2 class="text-4xl font-bold border-b-2 border-accent-color pb-2 mb-8">Glossary of Terms</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="p-4 bg-gray-100 rounded-lg">
+                    <h4 class="font-bold text-lg mb-1">Ascension</h4>
+                    <p class="text-sm">A hypothesized biophysical state-transition of an organism from a baseline human state to a "divine" state characterized by macroscopic quantum coherence.</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-lg">
+                    <h4 class="font-bold text-lg mb-1">Biophoton</h4>
+                    <p class="text-sm">An ultra-weak photon of light emitted by a living cell. The coherent field of these photons is thought to form the body's primary information field.</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-lg">
+                    <h4 class="font-bold text-lg mb-1">Corpus Divinum</h4>
+                    <p class="text-sm">Latin for "Divine Body." The theoretical endpoint of the ascension spectrum; a being of stabilized, coherent light that organizes matter.</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-lg">
+                    <h4 class="font-bold text-lg mb-1">DMT (N,N-Dimethyltryptamine)</h4>
+                    <p class="text-sm">A powerful endogenous psychedelic compound hypothesized to act as a "state activator," temporarily opening the pineal gland's quantum transducer function.</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-lg">
+                    <h4 class="font-bold text-lg mb-1">Fractal Antenna</h4>
+                    <p class="text-sm">An antenna that uses a fractal design to operate effectively over a wide range of frequencies. Non-coding DNA is theorized to function in this way.</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-lg">
+                    <h4 class="font-bold text-lg mb-1">ORMUS / Monatomic Gold</h4>
+                    <p class="text-sm">Orbitally Rearranged Monatomic Elements. A theorized state of matter where metals exist as single, high-spin atoms, potentially acting as room-temperature superconductors.</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-lg">
+                    <h4 class="font-bold text-lg mb-1">Quantum Biological Model (QBM)</h4>
+                    <p class="text-sm">A model of biology positing that life's foundational processes are orchestrated by underlying quantum phenomena like coherence and entanglement.</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-lg">
+                    <h4 class="font-bold text-lg mb-1">Quantum Coherence</h4>
+                    <p class="text-sm">A quantum state in which all constituent particles act as a single, unified wave. Macroscopic coherence is the hypothetical extension of this property to a biological system.</p>
+                </div>
+                <div class="p-4 bg-gray-100 rounded-lg">
+                    <h4 class="font-bold text-lg mb-1">Zero-Point Field (ZPF)</h4>
+                    <p class="text-sm">The lowest possible energy state of a quantum field; a sea of virtual particles and energy that permeates the vacuum of space.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mobile Menu
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Accordions
+            const accordions = document.querySelectorAll('.accordion-button');
+            accordions.forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    const icon = button.querySelector('.accordion-icon');
+                    
+                    button.classList.toggle('open');
+                    icon.classList.toggle('rotate-180');
+
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    }
+                });
+            });
+            
+            // Nav link highlighting on scroll
+            const sections = document.querySelectorAll('main section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: "-30% 0px -70% 0px" });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
