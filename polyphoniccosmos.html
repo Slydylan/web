@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Entangled Harmonics: A Polyphonic Cosmos</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Inter', sans-serif; }
+        canvas { display: block; }
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #444;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.5;
+            max-width: 80%;
+            z-index: 10;
+        }
+        #info-title { font-weight: 700; font-size: 22px; color: #ffdf80; }
+        #info-description { font-size: 16px; color: #ccc; }
+
+
+        .back-link {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 5px;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            z-index: 10;
+        }
+        .back-link:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-color: #fff;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="info-panel">
+        <div id="info-title">The Entangled Harmonics</div>
+        <div id="info-description">A Polyphonic Cosmos: Reality at Maximum Expression.</div>
+    </div>
+
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+
+        // --- Core Simulation Parameters ---
+        const NUM_SPIRALS = 5; // Number of distinct large spirals
+        const PARTICLES_PER_SPIRAL = 15000;
+        const TOTAL_PARTICLES = NUM_SPIRALS * PARTICLES_PER_SPIRAL;
+
+
+        const SPIRAL_MAJOR_RADIUS_START = 100; // Start radius of the main spiral arm
+        const SPIRAL_MAJOR_RADIUS_END = 20;    // End radius (spirals inwards)
+        const SPIRAL_TURNS = 3;                // How many turns each spiral makes
+        const SPIRAL_HEIGHT = 80;              // Total height of each spiral
+
+
+        const PARTICLE_FLOW_SPEED = 0.005;     // Speed of particles along the spiral arm
+        const PARTICLE_JITTER_AMPLITUDE = 1.0; // Subtle jitter for dynamic look
+        const PARTICLE_SIZE = 0.6;             // Base size of particles
+
+
+        // --- Scene Setup ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 100, 250);
+        camera.lookAt(0, 0, 0);
+
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.05; // Slower auto-rotation for a grand, stable feel
+        controls.minDistance = 50;
+        controls.maxDistance = 500;
+
+
+        const clock = new THREE.Clock();
+       
+        // --- Particle System Setup ---
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(TOTAL_PARTICLES * 3);
+        const colors = new Float32Array(TOTAL_PARTICLES * 3);
+        const particleStates = []; // Stores spiral index, position along spiral, and initial jitter offset
+
+
+        // --- Initialize Spirals and Particles ---
+        for (let i = 0; i < TOTAL_PARTICLES; i++) {
+            const spiralIndex = Math.floor(i / PARTICLES_PER_SPIRAL);
+            const particleInSpiralIndex = i % PARTICLES_PER_SPIRAL;
+
+
+            // Assign a unique phase offset for each particle within its spiral for flowing effect
+            const initialSpiralProgress = (particleInSpiralIndex / PARTICLES_PER_SPIRAL);
+
+
+            // Store initial jitter offset
+            const jitterX = (Math.random() - 0.5) * PARTICLE_JITTER_AMPLITUDE;
+            const jitterY = (Math.random() - 0.5) * PARTICLE_JITTER_AMPLITUDE;
+            const jitterZ = (Math.random() - 0.5) * PARTICLE_JITTER_AMPLITUDE;
+
+
+            particleStates.push({
+                spiralIndex: spiralIndex, // 0 to 1 along the spiral's length
+                spiralProgress: initialSpiralProgress,
+                jitterOffset: new THREE.Vector3(jitterX, jitterY, jitterZ)
+            });
+        }
+
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+
+        const material = new THREE.PointsMaterial({
+            size: PARTICLE_SIZE,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+        });
+
+
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            const elapsedTime = clock.getElapsedTime();
+
+
+            const currentPositions = geometry.attributes.position.array;
+            const currentColors = geometry.attributes.color.array;
+            const color = new THREE.Color();
+
+
+            // --- Update each Particle ---
+            for (let i = 0; i < TOTAL_PARTICLES; i++) {
+                // Use object destructuring to safely access particle properties
+                const { spiralIndex, spiralProgress, jitterOffset } = particleStates[i];
+               
+                // Update particle's progress along its spiral path
+                particleStates[i].spiralProgress = (spiralProgress + PARTICLE_FLOW_SPEED * clock.getDelta()) % 1.0;
+
+
+                // Calculate position on the main spiral for this particle
+                // Each spiral has a slight angular offset to prevent them from stacking perfectly
+                const spiralAngleOffset = (spiralIndex / NUM_SPIRALS) * Math.PI * 2;
+               
+                // Angle along the spiral path (0 to SPIRAL_TURNS * 2PI)
+                const theta = particleStates[i].spiralProgress * SPIRAL_TURNS * Math.PI * 2;
+               
+                // Radius that decreases as theta increases (spirals inwards)
+                const radius = THREE.MathUtils.lerp(SPIRAL_MAJOR_RADIUS_START, SPIRAL_MAJOR_RADIUS_END, particleStates[i].spiralProgress);
+               
+                // Height that varies along the spiral
+                const height = (particleStates[i].spiralProgress - 0.5) * SPIRAL_HEIGHT; // Centered around Y=0
+
+
+                const x = radius * Math.cos(theta + spiralAngleOffset);
+                const y = height;
+                const z = radius * Math.sin(theta + spiralAngleOffset);
+
+
+                // Add subtle jitter for organic, dynamic feel
+                const jitteredX = x + jitterOffset.x * Math.sin(elapsedTime * 2 + i * 0.1);
+                const jitteredY = y + jitterOffset.y * Math.cos(elapsedTime * 2 + i * 0.1);
+                const jitteredZ = z + jitterOffset.z * Math.sin(elapsedTime * 2 + i * 0.1);
+
+
+                currentPositions[i * 3] = jitteredX;
+                currentPositions[i * 3 + 1] = jitteredY;
+                currentPositions[i * 3 + 2] = jitteredZ;
+
+
+                // --- Set Color based on Spiral Index and subtle pulsation ---
+                // Use a harmonious color palette, cycling through hues
+                const baseHue = (spiralIndex / NUM_SPIRALS) + Math.sin(elapsedTime * 0.1) * 0.05; // Slight global hue shift
+                const saturation = 0.8 + Math.sin(elapsedTime * 0.5 + i * 0.01) * 0.2; // Pulsating saturation
+                const lightness = 0.5 + Math.cos(elapsedTime * 0.3 + i * 0.005) * 0.3; // Pulsating lightness
+
+
+                color.setHSL(baseHue % 1.0, saturation, lightness); // Ensure hue wraps around
+               
+                currentColors[i * 3] = color.r;
+                currentColors[i * 3 + 1] = color.g;
+                currentColors[i * 3 + 2] = color.b;
+            }
+
+
+            geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.color.needsUpdate = true;
+
+
+            renderer.render(scene, camera);
+        }
+
+
+        // --- Handle Window Resizing ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+
+        // --- Add Back Button ---
+        const backButton = document.createElement('a');
+        backButton.href = 'index.html';
+        backButton.textContent = 'Back to Index';
+        backButton.className = 'back-link';
+        document.body.appendChild(backButton);
+       
+        // Start the animation
+        animate();
+    </script>
+</body>
+</html>
+
+
+
