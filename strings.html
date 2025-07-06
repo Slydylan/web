@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strings & Superstrings: Unfolding Dimensions</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Inter', sans-serif; }
+        canvas { display: block; }
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #444;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.5;
+            max-width: 80%;
+            z-index: 10;
+        }
+        #info-title { font-weight: 700; font-size: 22px; color: #ffdf80; }
+        #info-description { font-size: 16px; color: #ccc; }
+
+
+        .back-link {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 5px;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            z-index: 10;
+        }
+        .back-link:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-color: #fff;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="info-panel">
+        <div id="info-title">Phase I: Fundamental Strings (1D)</div>
+        <div id="info-description">Basic excitations of the Omega Field as vibrating lines.</div>
+    </div>
+
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+
+        // --- Core Simulation Parameters ---
+        const NUM_STRINGS = 100; // Number of distinct 1D strings
+        const PARTICLES_PER_STRING = 500;
+        const TOTAL_PARTICLES = NUM_STRINGS * PARTICLES_PER_STRING;
+
+
+        // Phase Timings
+        const PHASE_I_DURATION = 8;  // Fundamental Strings (1D)
+        const PHASE_II_DURATION = 10; // Superstring Emergence (2D)
+        const PHASE_III_DURATION = 15; // Higher-Dimensional Manifestation (Implied >2D)
+        const PHASE_IV_DURATION = 999; // Stable Higher-D Flow
+
+
+        // String Parameters
+        const STRING_LENGTH = 100;
+        const STRING_VIBRATION_AMPLITUDE = 5;
+        const STRING_VIBRATION_FREQUENCY = 10; // Rapid vibration
+
+
+        // Superstring (2D Surface) Parameters
+        const SUPERSTRING_WIDTH = 120;
+        const SUPERSTRING_HEIGHT = 120;
+        const SUPERSTRING_DENSITY = 10; // How many strings make up the surface across its width/height
+
+
+        // Higher-Dimensional Warping Parameters
+        const WARP_FREQUENCY_X = 0.05;
+        const WARP_FREQUENCY_Y = 0.07;
+        const WARP_AMPLITUDE = 30; // How much the surface warps
+
+
+        const PARTICLE_FLOW_SPEED = 0.005; // Speed of particles along strings
+        const PARTICLE_SIZE = 0.5;
+
+
+        // --- Scene Setup ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 0, 200);
+        camera.lookAt(0, 0, 0);
+
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.05;
+        controls.minDistance = 10;
+        controls.maxDistance = 500;
+
+
+        const clock = new THREE.Clock();
+       
+        // --- Particle System Setup ---
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(TOTAL_PARTICLES * 3);
+        const colors = new Float32Array(TOTAL_PARTICLES * 3);
+        const particleStates = []; // Stores string index, position along string, and initial random offset
+
+
+        // --- Initialize Particles ---
+        for (let i = 0; i < TOTAL_PARTICLES; i++) {
+            const stringIndex = Math.floor(i / PARTICLES_PER_STRING);
+            const particleInStringIndex = i % PARTICLES_PER_STRING;
+
+
+            // Initial random position for Phase I
+            const initialX = (Math.random() - 0.5) * STRING_LENGTH * 2;
+            const initialY = (Math.random() - 0.5) * STRING_LENGTH * 2;
+            const initialZ = (Math.random() - 0.5) * STRING_LENGTH * 2;
+
+
+            positions[i * 3] = initialX;
+            positions[i * 3 + 1] = initialY;
+            positions[i * 3 + 2] = initialZ;
+
+
+            particleStates.push({
+                stringIndex: stringIndex,
+                // Progress along the string (0 to 1)
+                stringProgress: particleInStringIndex / PARTICLES_PER_STRING,
+                // Random offset for initial chaotic strings
+                initialOffset: new THREE.Vector3(initialX, initialY, initialZ),
+                // Target position on the 2D superstring surface
+                targetSuperstringPos: new THREE.Vector3()
+            });
+        }
+
+
+        // Calculate target positions on the 2D superstring surface
+        // This pre-calculates where each particle *wants* to be on the surface
+        for (let i = 0; i < TOTAL_PARTICLES; i++) {
+            const particle = particleStates[i];
+            const stringIndex = particle.stringIndex;
+            const particleInStringIndex = i % PARTICLES_PER_STRING;
+
+
+            // Map stringIndex and particleInStringIndex to a 2D grid for the surface
+            const u = (stringIndex % SUPERSTRING_DENSITY) / SUPERSTRING_DENSITY; // X-like coordinate on surface
+            const v = Math.floor(stringIndex / SUPERSTRING_DENSITY) / (NUM_STRINGS / SUPERSTRING_DENSITY); // Y-like coordinate on surface
+
+
+            // Position on a flat plane for now, will be warped later
+            particle.targetSuperstringPos.x = (u - 0.5) * SUPERSTRING_WIDTH;
+            particle.targetSuperstringPos.y = (v - 0.5) * SUPERSTRING_HEIGHT;
+            particle.targetSuperstringPos.z = 0; // Flat plane initially
+        }
+
+
+
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+
+        const material = new THREE.PointsMaterial({
+            size: PARTICLE_SIZE,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+        });
+
+
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+
+
+        // --- Narrative & State Management ---
+        const infoTitle = document.getElementById('info-title');
+        const infoDescription = document.getElementById('info-description');
+        let currentPhaseIndex = 0;
+        const NARRATIVE = [
+            { title: "Phase I: Fundamental Strings (1D)", description: "Basic excitations of the Omega Field as vibrating lines." },
+            { title: "Phase II: Superstring Emergence (2D)", description: "Individual strings coalesce, forming a coherent 2D surface." },
+            { title: "Phase III: Higher-Dimensional Manifestation (>2D)", description: "The superstring warps and folds, implying existence in higher dimensions." },
+            { title: "Phase IV: Stable Higher-D Flow", description: "A dynamically stable higher-dimensional reality, composed of fundamental strings." }
+        ];
+
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            const elapsedTime = clock.getElapsedTime();
+            const deltaTime = clock.getDelta();
+
+
+            const currentPositions = geometry.attributes.position.array;
+            const currentColors = geometry.attributes.color.array;
+            const color = new THREE.Color();
+
+
+            // --- Update Simulation Phase ---
+            let cumulativeDuration = 0;
+            let newPhaseIndex = 0;
+            if (elapsedTime < (cumulativeDuration += PHASE_I_DURATION)) {
+                newPhaseIndex = 0;
+            } else if (elapsedTime < (cumulativeDuration += PHASE_II_DURATION)) {
+                newPhaseIndex = 1;
+            } else if (elapsedTime < (cumulativeDuration += PHASE_III_DURATION)) {
+                newPhaseIndex = 2;
+            } else {
+                newPhaseIndex = 3;
+            }
+
+
+            if (newPhaseIndex !== currentPhaseIndex) {
+                currentPhaseIndex = newPhaseIndex;
+                infoTitle.textContent = NARRATIVE[currentPhaseIndex].title;
+                infoDescription.textContent = NARRATIVE[currentPhaseIndex].description;
+            }
+
+
+            // Calculate phase progress (0 to 1) within the current active phase
+            const phaseStartTime = (currentPhaseIndex === 0) ? 0 :
+                                   (currentPhaseIndex === 1) ? PHASE_I_DURATION :
+                                   (currentPhaseIndex === 2) ? PHASE_I_DURATION + PHASE_II_DURATION :
+                                   PHASE_I_DURATION + PHASE_II_DURATION + PHASE_III_DURATION;
+            const currentPhaseElapsedTime = elapsedTime - phaseStartTime;
+            const currentPhaseDuration = (currentPhaseIndex === 0) ? PHASE_I_DURATION :
+                                         (currentPhaseIndex === 1) ? PHASE_II_DURATION :
+                                         (currentPhaseIndex === 2) ? PHASE_III_DURATION :
+                                         PHASE_IV_DURATION;
+            const phaseProgress = Math.min(1, currentPhaseElapsedTime / currentPhaseDuration);
+            const easedProgress = 0.5 - 0.5 * Math.cos(phaseProgress * Math.PI); // Smooth easing
+
+
+            // --- Update each Particle ---
+            for (let i = 0; i < TOTAL_PARTICLES; i++) {
+                const particle = particleStates[i];
+                let currentPos = new THREE.Vector3();
+                let currentHue, currentSaturation, currentLightness;
+
+
+                // Update particle's progress along its string (for flow effect)
+                particle.stringProgress = (particle.stringProgress + PARTICLE_FLOW_SPEED * deltaTime) % 1.0;
+
+
+                // --- Phase-dependent particle motion and coloring ---
+                if (currentPhaseIndex === 0) { // Fundamental Strings (1D)
+                    // Particles move and vibrate along random 1D paths
+                    const x = particle.initialOffset.x;
+                    const y = particle.initialOffset.y;
+                    const z = particle.initialOffset.z;
+
+
+                    // Simple vibration along a random axis
+                    currentPos.x = x + Math.sin(elapsedTime * STRING_VIBRATION_FREQUENCY + particle.stringIndex * 0.5) * STRING_VIBRATION_AMPLITUDE;
+                    currentPos.y = y + Math.cos(elapsedTime * STRING_VIBRATION_FREQUENCY * 0.8 + particle.stringIndex * 0.5) * STRING_VIBRATION_AMPLITUDE;
+                    currentPos.z = z + Math.sin(elapsedTime * STRING_VIBRATION_FREQUENCY * 1.2 + particle.stringIndex * 0.5) * STRING_VIBRATION_AMPLITUDE;
+
+
+                    // Color: Bright, energetic, distinct for each string
+                    currentHue = (particle.stringIndex / NUM_STRINGS) % 1.0;
+                    currentSaturation = 1.0;
+                    currentLightness = 0.5 + Math.sin(elapsedTime * 5 + i * 0.01) * 0.3;
+
+
+                } else if (currentPhaseIndex === 1) { // Superstring Emergence (2D)
+                    // Lerp from initial chaotic position to target 2D surface position
+                    currentPos.lerpVectors(currentPositions.slice(i*3, i*3+3), particle.targetSuperstringPos, easedProgress);
+
+
+                    // Color transition: from individual string colors to a coherent surface color
+                    currentHue = THREE.MathUtils.lerp((particle.stringIndex / NUM_STRINGS) % 1.0, 0.5, easedProgress); // Towards green/cyan
+                    currentSaturation = THREE.MathUtils.lerp(1.0, 0.9, easedProgress);
+                    currentLightness = THREE.MathUtils.lerp(0.6, 0.8, easedProgress);
+
+
+                } else if (currentPhaseIndex === 2 || currentPhaseIndex === 3) { // Higher-Dimensional Manifestation (>2D)
+                    // Start from the target 2D surface position
+                    currentPos.copy(particle.targetSuperstringPos);
+
+
+                    // Apply dynamic warping to the 2D surface to imply higher dimensions
+                    const warpX = Math.sin(currentPos.x * WARP_FREQUENCY_X + elapsedTime * 0.5) * WARP_AMPLITUDE;
+                    const warpY = Math.cos(currentPos.y * WARP_FREQUENCY_Y + elapsedTime * 0.7) * WARP_AMPLITUDE;
+                    const warpZ = Math.sin(currentPos.x * WARP_FREQUENCY_X * 0.5 + currentPos.y * WARP_FREQUENCY_Y * 0.5 + elapsedTime * 0.9) * WARP_AMPLITUDE;
+
+
+                    currentPos.x += warpX;
+                    currentPos.y += warpY;
+                    currentPos.z += warpZ;
+
+
+                    // Add subtle flow along the strings on the surface
+                    const flowOffset = particle.stringProgress * STRING_LENGTH * 0.1; // Scale flow
+                    currentPos.x += Math.cos(particle.stringIndex + elapsedTime) * flowOffset;
+                    currentPos.y += Math.sin(particle.stringIndex + elapsedTime) * flowOffset;
+
+
+
+
+                    // Color: Coherent, shimmering, and dynamically shifting
+                    currentHue = (0.5 + Math.sin(elapsedTime * 0.05 + i * 0.0001) * 0.1) % 1.0; // Subtle hue shift
+                    currentSaturation = 0.9 + Math.sin(elapsedTime * 0.8 + i * 0.001) * 0.1;
+                    currentLightness = 0.7 + Math.cos(elapsedTime * 0.6 + i * 0.0005) * 0.2;
+                }
+
+
+                // Update particle position in the buffer
+                currentPositions[i * 3] = currentPos.x;
+                currentPositions[i * 3 + 1] = currentPos.y;
+                currentPositions[i * 3 + 2] = currentPos.z;
+
+
+                // Set particle color
+                color.setHSL(currentHue, currentSaturation, currentLightness);
+                currentColors[i * 3] = color.r;
+                currentColors[i * 3 + 1] = color.g;
+                currentColors[i * 3 + 2] = color.b;
+            }
+
+
+            geometry.attributes.position.needsUpdate = true;
+            geometry.attributes.color.needsUpdate = true;
+
+
+            renderer.render(scene, camera);
+        }
+
+
+        // --- Handle Window Resizing ---
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+
+        // --- Add Back Button ---
+        const backButton = document.createElement('a');
+        backButton.href = 'index.html';
+        backButton.textContent = 'Back to Index';
+        backButton.className = 'back-link';
+        document.body.appendChild(backButton);
+       
+        // Start the animation
+        animate();
+    </script>
+</body>
+</html>
+
+
+
