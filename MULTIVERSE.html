@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Emergent Multiverse & Coherence Cascade</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Inter', sans-serif; }
+        canvas { display: block; }
+        #info-panel {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #444;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 18px;
+            line-height: 1.5;
+            max-width: 80%;
+        }
+        #info-title { font-weight: 700; font-size: 22px; color: #ffdf80; }
+        #info-description { font-size: 16px; color: #ccc; }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="info-panel">
+        <div id="info-title">The Emergent Multiverse</div>
+        <div id="info-description">Observing multiple "universe bubbles" evolving independently from the chaotic Omega Field.</div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Core Simulation Parameters ---
+        const NUM_POINTS = 80000;
+        const FIELD_SIZE = 400;
+        const NUM_UNIVERSES = 5;
+        const CASCADE_TRIGGER_TIME = 15.0; // seconds
+
+        // --- Scene & Simulation State ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 100, 500);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.1;
+
+        const clock = new THREE.Clock();
+        
+        // --- Particle System Setup ---
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(NUM_POINTS * 3);
+        const colors = new Float32Array(NUM_POINTS * 3);
+        const pointStates = []; // [realityValue, massPotential, universeID, originalT]
+
+        // --- Universe Bubble Setup ---
+        const universes = [];
+        for (let i = 0; i < NUM_UNIVERSES; i++) {
+            universes.push({
+                id: i,
+                center: new THREE.Vector3(
+                    (Math.random() - 0.5) * FIELD_SIZE * 0.8,
+                    (Math.random() - 0.5) * FIELD_SIZE * 0.8,
+                    (Math.random() - 0.5) * FIELD_SIZE * 0.8
+                ),
+                radius: 80 + Math.random() * 40,
+                fib_t: 2, // Start at a low fibonacci index
+                cascadeTriggered: false
+            });
+        }
+        
+        let cascadeTargetUniverse = Math.floor(Math.random() * NUM_UNIVERSES);
+
+        // --- Initialize Points ---
+        for (let i = 0; i < NUM_POINTS; i++) {
+            const x = (Math.random() - 0.5) * FIELD_SIZE;
+            const y = (Math.random() - 0.5) * FIELD_SIZE;
+            const z = (Math.random() - 0.5) * FIELD_SIZE;
+            positions[i * 3] = x;
+            positions[i * 3 + 1] = y;
+            positions[i * 3 + 2] = z;
+
+            let universeID = -1; // -1 means it's in the chaotic Omega Field
+            for (let j = 0; j < NUM_UNIVERSES; j++) {
+                const dist = new THREE.Vector3(x, y, z).distanceTo(universes[j].center);
+                if (dist < universes[j].radius) {
+                    universeID = j;
+                    break;
+                }
+            }
+            
+            const initialState = (universeID === -1) ? Math.random() * 0.1 : 0.5 + Math.random() * 0.2;
+            pointStates.push([initialState, 0, universeID, 2]); // reality, mass, universeID, fib_t
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: 1.5,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+        });
+
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+
+        // --- Fibonacci Sequence Generator ---
+        const fibonacci = [0, 1];
+        for (let i = 2; i < 50; i++) {
+            fibonacci.push(fibonacci[i - 1] + fibonacci[i - 2]);
+        }
+
+        let cascadeInProgress = false;
+        let cascadeEndTime = 0;
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            const elapsedTime = clock.getElapsedTime();
+            const deltaTime = clock.getDelta();
+
+            const currentPositions = geometry.attributes.position.array;
+            const currentColors = geometry.attributes.color.array;
+            const color = new THREE.Color();
+
+            // --- Coherence Cascade Logic ---
+            if (elapsedTime > CASCADE_TRIGGER_TIME && !universes[cascadeTargetUniverse].cascadeTriggered) {
+                cascadeInProgress = true;
+                cascadeEndTime = elapsedTime + 2.0; // Flash lasts for 2 seconds
+                universes[cascadeTargetUniverse].cascadeTriggered = true;
+                
+                document.getElementById('info-title').innerText = 'Coherence Cascade';
+                document.getElementById('info-description').innerText = 'A region of space achieves near-perfect order, awakening the potential for mass.';
+            }
+
+            if (cascadeInProgress && elapsedTime > cascadeEndTime) {
+                 cascadeInProgress = false;
+                 document.getElementById('info-title').innerText = 'A New Law is Born';
+                 document.getElementById('info-description').innerText = 'The golden cluster now possesses inertia—a memory of past perfection.';
+            }
+
+            // --- Update each point ---
+            for (let i = 0; i < NUM_POINTS; i++) {
+                let [realityValue, massPotential, universeID, fib_t] = pointStates[i];
+                
+                if (universeID !== -1) {
+                    // Update fibonacci time step slowly
+                    if (Math.random() < 0.01) {
+                       fib_t = Math.min(fib_t + 1, fibonacci.length - 1);
+                    }
+
+                    // The Asymptotic Float Equation
+                    const Ft = fibonacci[fib_t];
+                    const V_prev = realityValue;
+                    let targetReality = (1 - 1 / Ft) + (Math.cos(Math.PI * V_prev * Ft) / Ft);
+                    
+                    // Dampen evolution if mass is present
+                    const damping = 1.0 - (massPotential * 0.95);
+                    realityValue += (targetReality - V_prev) * 0.1 * damping;
+
+                } else {
+                    // Points in the raw Omega Field remain chaotic
+                    realityValue += (Math.random() - 0.5) * 0.01;
+                    realityValue = Math.max(0, Math.min(0.1, realityValue));
+                }
+                
+                // --- Handle Cascade Visuals ---
+                if (cascadeInProgress && universeID === cascadeTargetUniverse) {
+                     // Check if point is in the cascade sub-cluster
+                     const pointPos = new THREE.Vector3(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+                     if(pointPos.distanceTo(universes[universeID].center) < universes[universeID].radius * 0.3) {
+                        realityValue = 0.999; // Force high coherence
+                        // After the flash peak, set mass potential
+                        if(elapsedTime > (cascadeEndTime - 0.5)) {
+                           massPotential = 1.0;
+                        }
+                     }
+                }
+
+                pointStates[i] = [realityValue, massPotential, universeID, fib_t];
+
+                // --- Set Color based on State ---
+                if (massPotential > 0) {
+                    // Golden color for massy points, slowly pulsating
+                    const pulse = 0.8 + Math.sin(elapsedTime * 0.5) * 0.2;
+                    color.setHSL(0.12, 1.0, 0.6 * pulse);
+                } else {
+                    // Standard color from blue (low coherence) to white (high coherence)
+                    const hue = 0.6; // Blue/Purple
+                    const saturation = 0.8 + realityValue * 0.2;
+                    const lightness = realityValue * 0.9;
+                    color.setHSL(hue, saturation, lightness);
+                }
+
+                currentColors[i * 3] = color.r;
+                currentColors[i * 3 + 1] = color.g;
+                currentColors[i * 3 + 2] = color.b;
+            }
+
+            geometry.attributes.color.needsUpdate = true;
+            renderer.render(scene, camera);
+        }
+
+        // --- Add Back Button ---
+        const backButton = document.createElement('a');
+        backButton.href = 'index.html';
+        backButton.textContent = 'Back to Index';
+        backButton.style.position = 'absolute';
+        backButton.style.bottom = '20px';
+        backButton.style.left = '50%';
+        backButton.style.transform = 'translateX(-50%)';
+        backButton.style.padding = '10px 20px';
+        backButton.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        backButton.style.color = '#fff';
+        backButton.style.border = '1px solid #555';
+        backButton.style.borderRadius = '5px';
+        backButton.style.textDecoration = 'none';
+        backButton.style.fontFamily = 'Inter, sans-serif';
+        document.body.appendChild(backButton);
+        
+        animate();
+    </script>
+</body>
+</html>
