@@ -30,18 +30,23 @@ body {
 }
 
 /* 3. Typography */
-h1, h2, h3 {
+h1, h2, h3, h4, p, ul, ol, li {
     font-family: 'Lora', serif;
     color: var(--header-color);
     letter-spacing: 0.5px;
-    /* Ensure all headings are left-aligned by default */
-    text-align: left; /* ADDED/MODIFIED */
+    text-align: left; /* CRITICAL: Ensure all text elements default to left-align */
 }
+
+p, ul, ol, li {
+    font-family: 'Inter', sans-serif; /* Use Inter for body text for readability */
+    color: var(--text-color);
+    font-weight: 300;
+}
+
 
 header h1 {
     font-size: 3.5em;
     margin: 0;
-    text-align: left; /* ADDED/MODIFIED */
 }
 
 header p {
@@ -49,7 +54,6 @@ header p {
     color: var(--accent-color);
     margin-top: 10px;
     font-style: italic;
-    text-align: left; /* ADDED/MODIFIED */
 }
 
 h2 {
@@ -72,7 +76,6 @@ h4 {
     font-weight: 700;
     margin-top: 30px;
     margin-bottom: 10px;
-    text-align: left; /* ADDED/MODIFIED */
 }
 
 strong {
@@ -82,7 +85,7 @@ strong {
 
 /* 4. Common Elements & Containers */
 header {
-    text-align: left; /* MODIFIED from center */
+    text-align: left; /* CRITICAL CHANGE: Changed from 'center' to 'left' */
     margin-bottom: 60px;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 30px;
@@ -93,7 +96,7 @@ section {
 }
 
 footer {
-    text-align: left; /* MODIFIED from center */
+    text-align: center; /* Footer can remain centered for a nice bookend effect */
     margin-top: 80px;
     padding-top: 30px;
     border-top: 1px solid var(--border-color);
@@ -110,7 +113,6 @@ footer {
     margin: 25px 0;
     border-radius: 0 8px 8px 0;
     font-style: italic;
-    text-align: left; /* Explicitly ensure left alignment */
 }
 
 /* For synthesis and key takeaways */
@@ -120,30 +122,28 @@ footer {
     padding: 25px;
     margin-top: 40px;
     border-radius: 8px;
-    text-align: left; /* Explicitly ensure left alignment */
 }
 .synthesis h3 {
     color: var(--accent-color);
     margin-top: 0;
-    text-align: left; /* Explicitly ensure left alignment */
 }
 
-/* For mathematical formulas */
+/* For mathematical formulas - This remains centered as desired */
 .formula-container {
     background-color: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 30px;
-    margin: 30px 0;
-    /* Removed flex properties and text-align: center to allow parent's text-align to apply or keep it naturally centered */
-    /* If you want the formulas themselves to be centered *within* the container, but the container's *text* to be left-aligned, you'd adjust MathJax config or target its output directly. For now, this will make the container's own text left-aligned if it has any. */
+    margin: 30px auto; /* 'margin: auto' helps with centering the block */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: auto;
 }
 
 mjx-container {
     font-size: 1.2em !important;
-    /* MathJax containers usually self-center. If you want them left-aligned, it's more complex, often needing MathJax configuration, e.g., MathJax.config.tex.displayMath.processAndStyle = 'Text'; */
 }
-
 
 /* 6. Navigation & Links */
 a {
@@ -158,13 +158,13 @@ a:hover {
 
 .back-link {
     display: block;
-    text-align: left; /* MODIFIED from center */
+    text-align: center;
     margin: 40px auto -20px auto;
     font-size: 1.1em;
     font-weight: bold;
 }
 
-/* For the index page list (already handled as it's excluded from this request) */
+/* For the index page list */
 .index-nav ul {
     list-style: none;
     padding: 0;
@@ -199,7 +199,6 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
-    text-align: left; /* Explicitly align table content left */
 }
 th, td {
     border: 1px solid var(--border-color);
@@ -213,48 +212,3 @@ th {
 td {
     font-family: monospace, monospace;
 }
-
-/* Specific overrides for pages that might have inline <style> tags */
-/* These inline styles would need to be removed from the HTML files directly,
-   or overridden with !important, but it's best to keep styles in CSS file. */
-
-/* For asymptoticfloattruth.html, finalargument.html, etc. */
-/* You would need to remove these from the HTML files:
-   section h2, section h3, section h4, header p.intro-paragraph {
-       text-align: center;
-   }
-*/
-/* And for finalargument.html:
-   section h2, section h3, section p.intro-paragraph {
-       text-align: center;
-   }
-*/
-/* And for evidence.html:
-   section h2, section h3, section h4, header p.intro-paragraph {
-       text-align: center;
-   }
-*/
-/* And for EMERGENT_SPACETIME.html:
-   section h2, section h3, section h4, header p {
-       text-align: center;
-   }
-*/
-/* And for knowablechaos.html:
-   header h1, header p {
-       text-align: center;
-   }
-*/
-/* And for THE_MATH.html:
-   h1 { font-size: 2.5rem; text-align: center; margin-bottom: 2rem; }
-*/
-
-/* If you cannot remove inline styles, you would add !important here.
-   Example:
-   header h1,
-   header p.intro-paragraph,
-   section h2,
-   section h3,
-   section h4 {
-       text-align: left !important;
-   }
-*/
