@@ -50,9 +50,11 @@
         }
 
         /* Main Content Layout (Removed Flexbox for stacked sections) */
-        main section:not(.intro-link) { /* Apply margin between all main sections except the intro */
-            margin-bottom: 20px;
+        main section { /* Apply margin between all main sections */
+            margin-bottom: 20px; /* Uniform spacing between all sections */
         }
+        /* Specific adjustment for the last section before the footer if needed, but 'main section' handles most cases */
+
 
         /* Section Styles */
         section {
@@ -156,33 +158,24 @@
             margin-top: 3px;
         }
 
-        /* Introduction Link Styling (Full Width) */
+        /* Introduction Link Box Styling (applies to both intro-link sections) */
         .intro-link {
             width: 100%;
-            margin-bottom: 30px;
             background-color: #e0f7fa; /* Light blue background */
             padding: 20px 25px;
             border-left: 6px solid #00bcd4; /* Cyan border */
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            /* This section specifically removed the list item styling from previous attempts */
+            /* Each intro-link section will now contain a single link directly */
         }
-        .intro-link ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .intro-link li {
-            margin-bottom: 15px; /* Added margin to separate the links */
-        }
-        .intro-link li:last-child {
-            margin-bottom: 0;
-        }
+
         .intro-link a {
+            display: block;
             text-decoration: none;
             color: #2c3e50; /* Dark text */
             font-weight: 700;
             font-size: 1.2em;
-            display: block; /* Ensures the whole clickable area */
             transition: color 0.3s ease, transform 0.2s ease; /* Added transform for subtle hover effect */
         }
         .intro-link a:hover {
@@ -222,9 +215,11 @@
                 font-size: 1.2em;
             }
 
+            .intro-link { /* Adjust padding for the intro boxes on small screens */
+                padding: 15px 20px;
+            }
             .intro-link a {
                 font-size: 1em;
-                padding: 0; /* No extra padding on 'a' for smaller screens, controlled by li */
             }
         }
     </style>
@@ -237,10 +232,11 @@
         </header>
         <main>
             <section class="intro-link">
-                <ul>
-                    <li><a href="READTHISFIRST.HTML">Important Introduction: Please Read This First!<span>Clear up common misnomers and foundational concepts.</span></a></li>
-                    <li><a href="OURUNIVERSE.html">Our Universe: A Specific Solution<span>Understanding the specific compactification and laws of our reality.</span></a></li>
-                </ul>
+                <a href="READTHISFIRST.HTML">Important Introduction: Please Read This First!<span>Clear up common misnomers and foundational concepts.</span></a>
+            </section>
+
+            <section class="intro-link">
+                <a href="OURUNIVERSE.html">Our Universe: A Specific Solution<span>Understanding the specific compactification and laws of our reality.</span></a>
             </section>
 
             <section id="core-theory">
