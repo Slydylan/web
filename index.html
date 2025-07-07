@@ -7,8 +7,336 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
+    <style>
+        /* --- UNIVERSAL STYLE FOR THE THEORY OF EMERGENT SPACETIME --- */
+
+        /* 1. Root Variables (Theme) */
+        :root {
+            --bg-color: #0a0a12;
+            --text-color: #c0c5ce;
+            --header-color: #e0e6f0;
+            --accent-color: #ffdf80;    /* Gold/Yellow for primary accents */
+            --accent-secondary: #58a6ff; /* Blue for secondary accents */
+            --border-color: #2a2f4c;
+            --code-bg: rgba(13, 17, 23, 0.5);
+        }
+
+        /* 2. Body and Layout */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.8;
+            font-weight: 300;
+            font-size: 1.1em;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 40px 60px 40px;
+        }
+
+        /* New Flexbox/Grid for Two Columns */
+        .content-columns {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px; /* Space between columns */
+            flex-wrap: wrap; /* Allows columns to wrap on smaller screens */
+        }
+
+        .column {
+            flex: 1; /* Each column takes equal space */
+            min-width: 300px; /* Minimum width before wrapping */
+        }
+
+        .top-row {
+            margin-bottom: 40px; /* Space below the top "READ THIS FIRST" section */
+        }
+
+        /* Make "READ THIS FIRST" link span full width */
+        .full-width-link ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .full-width-link li {
+            background-color: var(--accent-secondary); /* Highlight for important link */
+            border-color: var(--accent-color);
+            margin-bottom: 0; /* Remove extra margin */
+        }
+        .full-width-link li:hover {
+            border-color: var(--text-color);
+        }
+        .full-width-link a {
+            color: var(--bg-color); /* Dark text on light background for contrast */
+            text-align: center;
+            padding: 25px 30px;
+        }
+        .full-width-link a span {
+            color: var(--bg-color);
+        }
+
+
+        /* 3. Typography */
+        h1, h2, h3, h4, p, ul, ol, li {
+            font-family: 'Lora', serif;
+            color: var(--header-color);
+            letter-spacing: 0.5px;
+            text-align: left; /* CRITICAL: Ensure all text elements default to left-align */
+        }
+
+        p, ul, ol, li {
+            font-family: 'Inter', sans-serif; /* Use Inter for body text for readability */
+            color: var(--text-color);
+            font-weight: 300;
+        }
+
+
+        header h1 {
+            font-size: 3.5em;
+            margin: 0;
+        }
+
+        header p {
+            font-size: 1.2em;
+            color: var(--accent-color);
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        h2 {
+            font-size: 2.5em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-top: 60px;
+            margin-bottom: 25px;
+        }
+
+        /* Collapsible Section Styling */
+        details {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 10px 20px; /* Adjust padding for summary */
+        }
+
+        summary {
+            cursor: pointer;
+            font-size: 1.8em; /* Match h3 size for summary title */
+            font-weight: 700;
+            color: var(--header-color);
+            padding: 10px 0; /* Padding inside the summary */
+            outline: none;
+            list-style: none; /* Hide default triangle */
+        }
+
+        summary::-webkit-details-marker {
+            display: none; /* Hide default triangle for Webkit browsers */
+        }
+
+        /* Add custom disclosure triangle */
+        summary::before {
+            content: '►'; /* Right arrow */
+            margin-right: 10px;
+            transition: transform 0.2s ease-in-out;
+            display: inline-block;
+        }
+
+        details[open] summary::before {
+            content: '▼'; /* Down arrow when open */
+            transform: rotate(0deg); /* Reset rotation */
+        }
+
+        /* Adjust h2 within summary */
+        details summary h2 {
+            display: inline; /* Keep h2 on the same line as the arrow */
+            border-bottom: none; /* Remove border from h2 in summary */
+            margin: 0;
+            padding: 0;
+            font-size: 1em; /* Make it relative to summary font size */
+            color: inherit; /* Inherit color from summary */
+        }
+
+
+        h3 {
+            font-size: 1.8em;
+            margin-top: 40px;
+            margin-bottom: 15px;
+        }
+
+        h4 {
+            font-size: 1.3em;
+            color: var(--accent-secondary);
+            font-weight: 700;
+            margin-top: 30px;
+            margin-bottom: 10px;
+        }
+
+        strong {
+            color: var(--header-color);
+            font-weight: 700;
+        }
+
+        /* 4. Common Elements & Containers */
+        header {
+            text-align: left; /* CRITICAL CHANGE: Changed from 'center' to 'left' */
+            margin-bottom: 60px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 30px;
+        }
+
+        section {
+            margin-bottom: 50px; /* This margin will be primarily handled by details margin now */
+        }
+
+        footer {
+            text-align: center; /* Footer can remain centered for a nice bookend effect */
+            margin-top: 80px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+            color: #6a7185;
+        }
+
+        /* 5. Special Block Elements */
+
+        /* For definitions and explanations */
+        .explanation {
+            background-color: rgba(13, 17, 23, 0.5);
+            border-left: 4px solid var(--accent-secondary);
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+
+        /* For synthesis and key takeaways */
+        .synthesis {
+            border: 1px solid var(--accent-color);
+            background-color: rgba(255, 223, 128, 0.05);
+            padding: 25px;
+            margin-top: 40px;
+            border-radius: 8px;
+        }
+        .synthesis h3 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+
+        /* For mathematical formulas - This remains centered as desired */
+        .formula-container {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            margin: 30px auto; /* 'margin: auto' helps with centering the block */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        mjx-container {
+            font-size: 1.2em !important;
+        }
+
+        /* 6. Navigation & Links */
+        a {
+            color: var(--accent-secondary);
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+        a:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin: 40px auto -20px auto;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        /* For the index page list */
+        .index-nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0; /* Remove default ul margin */
+        }
+        .index-nav li {
+            background-color: var(--code-bg);
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: border-color 0.2s ease-in-out;
+        }
+        .index-nav li:hover {
+            border-color: var(--accent-secondary);
+        }
+        .index-nav a {
+            display: block;
+            padding: 20px 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .index-nav a span {
+            display: block;
+            font-size: 0.8em;
+            font-weight: normal;
+            color: var(--text-color);
+            margin-top: 5px;
+        }
+
+        /* Table styles for THE_MATH.html */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: var(--code-bg);
+            color: var(--header-color);
+        }
+        td {
+            font-family: monospace, monospace;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .content-columns {
+                flex-direction: column;
+                gap: 0; /* Remove gap when stacked */
+            }
+            .column {
+                min-width: unset; /* Remove min-width constraint */
+                width: 100%; /* Take full width */
+            }
+            .container {
+                padding: 15px;
+            }
+            header h1 {
+                font-size: 2.5em;
+            }
+            h2 {
+                font-size: 2em;
+            }
+            details summary {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+    </head>
 <body>
     <div class="container">
         <header>
