@@ -20,7 +20,7 @@
 
         .container {
             width: 90%;
-            max-width: 1200px;
+            max-width: 900px; /* Adjusted max-width for a single column */
             margin: 20px auto;
             background: #fff;
             padding: 20px 30px;
@@ -49,20 +49,9 @@
             font-size: 1.1em;
         }
 
-        /* Main Content Layout (Flexbox for two columns) */
-        .main-content {
-            display: flex;
-            flex-wrap: wrap; /* Allows columns to wrap on smaller screens */
-            gap: 30px; /* Space between columns and rows */
-            justify-content: space-between; /* Distributes space between columns */
-        }
-
-        .column {
-            flex: 1; /* Each column takes equal space */
-            min-width: 300px; /* Minimum width before columns stack */
-            display: flex;
-            flex-direction: column; /* Allows sections within a column to stack */
-            gap: 20px; /* Space between sections within a column */
+        /* Main Content Layout (Removed Flexbox for stacked sections) */
+        main section:not(.intro-link) { /* Apply margin between all main sections except the intro */
+            margin-bottom: 20px;
         }
 
         /* Section Styles */
@@ -113,11 +102,13 @@
             padding: 15px 20px;
             display: block; /* Default to visible */
             transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-            max-height: 500px; /* Max height for transition effect, now enables scrolling */
+            max-height: 400px; /* Adjusted max height to make scrolling more likely */
             opacity: 1;
-            overflow-y: auto; /* THIS IS THE KEY CHANGE: Enables vertical scrolling */
+            overflow-y: auto; /* Enables vertical scrolling */
             overflow-x: hidden; /* Prevent horizontal scrolling if not needed */
             -webkit-overflow-scrolling: touch; /* Improves scrolling on iOS */
+            /* Add some padding-right to account for scrollbar width */
+            padding-right: 25px;
         }
 
         .section-content.collapsed {
@@ -125,6 +116,7 @@
             opacity: 0;
             padding-top: 0;
             padding-bottom: 0;
+            padding-right: 20px; /* Reset padding when collapsed */
         }
 
         .index-nav ul {
@@ -205,12 +197,8 @@
             font-size: 0.9em;
         }
 
-        /* Responsive Adjustments */
+        /* Responsive Adjustments (Simplified for single column) */
         @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column; /* Stack columns on small screens */
-            }
-
             .container {
                 width: 95%;
                 padding: 15px;
@@ -242,76 +230,70 @@
                 <a href="READTHISFIRST.HTML">Important Introduction: Please Read This First!<span>Clear up common misnomers and foundational concepts.</span></a>
             </section>
 
-            <div class="main-content">
-                <div class="column">
-                    <section id="core-theory">
-                        <div class="section-header" onclick="toggleSection('core-theory')">
-                            <h2>Core Theory</h2>
-                            <span class="toggle-icon">&#9660;</span> </div>
-                        <nav class="index-nav section-content">
-                            <ul>
-                                <li><a href="EMERGENT_SPACETIME.html">The Theory of Emergent Spacetime<span>Complete overview of the foundational theory.</span></a></li>
-                                <li><a href="THEMATHEMATICS.html">The Mathematics of Emergent Spacetime<span>Detailed mathematical framework and derivations.</span></a></li>
-                                <li><a href="FORCESANDLAWS.html">The Origin of Forces & Physical Laws<span>How fundamental forces emerge from the Omega Field.</span></a></li>
-                                <li><a href="ORIGINOFMASS.html">The Origin of Mass<span>The natural emergence and nesting of the Higgs field.</span></a></li>
-                                <li><a href="ENGINEEREDCHAOS.html">The Fibonacci-Pi Chaos Engine<span>The mathematical engine driving universal evolution.</span></a></li>
-                                <li><a href="asymptoticfloattruth.html">The Asymptotic Float: Absolute Detail<span>The fundamental algorithm of emergent spacetime.</span></a></li>
-                                <li><a href="HARMONICS.html">The Science of Harmonic Entrainment<span>A universe in polyphonic resonance.</span></a></li>
-                                <li><a href="OMEGAPRINCIPLE.html">The Omega Principle<span>The universal inheritance and hierarchy of observers.</span></a></li>
-                                <li><a href="knowablechaos.html">The Principle of Knowable Chaos<span>Determinism, Unknowability, and the Anomaly of Coherence.</span></a></li>
-                                <li><a href="finalargument.html">What We Can't Know: The Final Argument<span>Completing the causal chain and addressing foundational critiques.</span></a></li>
-                            </ul>
-                        </nav>
-                    </section>
+            <section id="core-theory">
+                <div class="section-header" onclick="toggleSection('core-theory')">
+                    <h2>Core Theory</h2>
+                    <span class="toggle-icon">&#9660;</span> </div>
+                <nav class="index-nav section-content">
+                    <ul>
+                        <li><a href="EMERGENT_SPACETIME.html">The Theory of Emergent Spacetime<span>Complete overview of the foundational theory.</span></a></li>
+                        <li><a href="THEMATHEMATICS.html">The Mathematics of Emergent Spacetime<span>Detailed mathematical framework and derivations.</span></a></li>
+                        <li><a href="FORCESANDLAWS.html">The Origin of Forces & Physical Laws<span>How fundamental forces emerge from the Omega Field.</span></a></li>
+                        <li><a href="ORIGINOFMASS.html">The Origin of Mass<span>The natural emergence and nesting of the Higgs field.</span></a></li>
+                        <li><a href="ENGINEEREDCHAOS.html">The Fibonacci-Pi Chaos Engine<span>The mathematical engine driving universal evolution.</span></a></li>
+                        <li><a href="asymptoticfloattruth.html">The Asymptotic Float: Absolute Detail<span>The fundamental algorithm of emergent spacetime.</span></a></li>
+                        <li><a href="HARMONICS.html">The Science of Harmonic Entrainment<span>A universe in polyphonic resonance.</span></a></li>
+                        <li><a href="OMEGAPRINCIPLE.html">The Omega Principle<span>The universal inheritance and hierarchy of observers.</span></a></li>
+                        <li><a href="knowablechaos.html">The Principle of Knowable Chaos<span>Determinism, Unknowability, and the Anomaly of Coherence.</span></a></li>
+                        <li><a href="finalargument.html">What We Can't Know: The Final Argument<span>Completing the causal chain and addressing foundational critiques.</span></a></li>
+                    </ul>
+                </nav>
+            </section>
 
-                    <section id="scrutiny-section">
-                        <div class="section-header" onclick="toggleSection('scrutiny-section')">
-                            <h2>Scrutiny & Research</h2>
-                            <span class="toggle-icon">&#9660;</span>
-                        </div>
-                        <nav class="index-nav section-content">
-                            <ul>
-                                <li><a href="scrutiny.html">Full Scrutiny Synthesis<span>Challenges to the Theory of Emergent Spacetime.</span></a></li>
-                                <li><a href="Antiscrutinyresearch.html">Anti-Scrutiny Research Phase<span>Addressing challenges to the theory.</span></a></li>
-                                <li><a href="evidence.html">Evidence & Support<span>Empirical validation and supporting data.</span></a></li>
-                            </ul>
-                        </nav>
-                    </section>
+            <section id="visualizations">
+                <div class="section-header" onclick="toggleSection('visualizations')">
+                    <h2>Visualizations & Simulations</h2>
+                    <span class="toggle-icon">&#9660;</span>
                 </div>
+                <nav class="index-nav section-content">
+                    <ul>
+                        <li><a href="BIG_BANG.html">The Big Bang: A Generative Narrative<span>A visual journey through cosmic evolution.</span></a></li>
+                        <li><a href="multiverse.html">The Emergent Multiverse & Coherence Cascade<span>Observing multiple universe bubbles.</span></a></li>
+                        <li><a href="ORDERINTHECHAOS.html">Engineered Chaos: The First Structure<span>Visualizing the emergence of order from chaos.</span></a></li>
+                        <li><a href="strings_and_dimensions.html">Strings & Superstrings: Unfolding Dimensions<span>Visualizing fundamental strings and higher dimensions.</span></a></li>
+                        <li><a href="polyphoniccosmos.html">The Entangled Harmonics: A Polyphonic Cosmos<span>A visual representation of polyphonic resonance.</span></a></li>
+                        <li><a href="failedexperimentaluniverse.html">The Failed Experimental Universe<span>Model of an erratic, possibly failing universe.</span></a></li>
+                        <li><a href="thebeginningofbeginnings.html">The Beginning of Beginnings<span>Spacetime simulation of pre-asymptotic creation.</span></a></li>
+                    </ul>
+                </nav>
+            </section>
 
-                <div class="column">
-                    <section id="visualizations">
-                        <div class="section-header" onclick="toggleSection('visualizations')">
-                            <h2>Visualizations & Simulations</h2>
-                            <span class="toggle-icon">&#9660;</span>
-                        </div>
-                        <nav class="index-nav section-content">
-                            <ul>
-                                <li><a href="BIG_BANG.html">The Big Bang: A Generative Narrative<span>A visual journey through cosmic evolution.</span></a></li>
-                                <li><a href="multiverse.html">The Emergent Multiverse & Coherence Cascade<span>Observing multiple universe bubbles.</span></a></li>
-                                <li><a href="ORDERINTHECHAOS.html">Engineered Chaos: The First Structure<span>Visualizing the emergence of order from chaos.</span></a></li>
-                                <li><a href="strings_and_dimensions.html">Strings & Superstrings: Unfolding Dimensions<span>Visualizing fundamental strings and higher dimensions.</span></a></li>
-                                <li><a href="polyphoniccosmos.html">The Entangled Harmonics: A Polyphonic Cosmos<span>A visual representation of polyphonic resonance.</span></a></li>
-                                <li><a href="failedexperimentaluniverse.html">The Failed Experimental Universe<span>Model of an erratic, possibly failing universe.</span></a></li>
-                                <li><a href="thebeginningofbeginnings.html">The Beginning of Beginnings<span>Spacetime simulation of pre-asymptotic creation.</span></a></li>
-                            </ul>
-                        </nav>
-                    </section>
-
-                    <section id="support">
-                        <div class="section-header" onclick="toggleSection('support')">
-                            <h2>Support</h2>
-                            <span class="toggle-icon">&#9660;</span>
-                        </div>
-                        <nav class="index-nav section-content">
-                            <ul>
-                                <li><a href="donations.html">Support the Project<span>Your encouragement helps bring these ideas to life.</span></a></li>
-                                <li><a href="references.html">References<span>Supporting Literature for The Theory of Emergent Spacetime.</span></a></li>
-                            </ul>
-                        </nav>
-                    </section>
+            <section id="scrutiny-section">
+                <div class="section-header" onclick="toggleSection('scrutiny-section')">
+                    <h2>Scrutiny & Research</h2>
+                    <span class="toggle-icon">&#9660;</span>
                 </div>
-            </div>
+                <nav class="index-nav section-content">
+                    <ul>
+                        <li><a href="scrutiny.html">Full Scrutiny Synthesis<span>Challenges to the Theory of Emergent Spacetime.</span></a></li>
+                        <li><a href="Antiscrutinyresearch.html">Anti-Scrutiny Research Phase<span>Addressing challenges to the theory.</span></a></li>
+                        <li><a href="evidence.html">Evidence & Support<span>Empirical validation and supporting data.</span></a></li>
+                    </ul>
+                </nav>
+            </section>
+
+            <section id="support">
+                <div class="section-header" onclick="toggleSection('support')">
+                    <h2>Support</h2>
+                    <span class="toggle-icon">&#9660;</span>
+                </div>
+                <nav class="index-nav section-content">
+                    <ul>
+                        <li><a href="donations.html">Support the Project<span>Your encouragement helps bring these ideas to life.</span></a></li>
+                        <li><a href="references.html">References<span>Supporting Literature for The Theory of Emergent Spacetime.</span></a></li>
+                    </ul>
+                </nav>
+            </section>
         </main>
         <footer>
             <p>The Theory of Emergent Spacetime</p>
@@ -334,6 +316,7 @@
                 const content = section.querySelector('.section-content');
                 const header = section.querySelector('.section-header');
 
+                // Only collapse if not 'core-theory'
                 if (section.id !== 'core-theory') {
                     if (content) {
                         content.classList.add('collapsed');
