@@ -5,7 +5,7 @@
     --bg-color: #0a0a12;
     --text-color: #c0c5ce;
     --header-color: #e0e6f0;
-    --accent-color: #ffdf80;      /* Gold/Yellow for primary accents */
+    --accent-color: #ffdf80;    /* Gold/Yellow for primary accents */
     --accent-secondary: #58a6ff; /* Blue for secondary accents */
     --border-color: #2a2f4c;
     --code-bg: rgba(13, 17, 23, 0.5);
@@ -28,6 +28,47 @@ body {
     margin: 0 auto;
     padding: 20px 40px 60px 40px;
 }
+
+/* New Flexbox/Grid for Two Columns */
+.content-columns {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px; /* Space between columns */
+    flex-wrap: wrap; /* Allows columns to wrap on smaller screens */
+}
+
+.column {
+    flex: 1; /* Each column takes equal space */
+    min-width: 300px; /* Minimum width before wrapping */
+}
+
+.top-row {
+    margin-bottom: 40px; /* Space below the top "READ THIS FIRST" section */
+}
+
+/* Make "READ THIS FIRST" link span full width */
+.full-width-link ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.full-width-link li {
+    background-color: var(--accent-secondary); /* Highlight for important link */
+    border-color: var(--accent-color);
+    margin-bottom: 0; /* Remove extra margin */
+}
+.full-width-link li:hover {
+    border-color: var(--text-color);
+}
+.full-width-link a {
+    color: var(--bg-color); /* Dark text on light background for contrast */
+    text-align: center;
+    padding: 25px 30px;
+}
+.full-width-link a span {
+    color: var(--bg-color);
+}
+
 
 /* 3. Typography */
 h1, h2, h3, h4, p, ul, ol, li {
@@ -64,6 +105,53 @@ h2 {
     margin-bottom: 25px;
 }
 
+/* Collapsible Section Styling */
+details {
+    background-color: var(--code-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 10px 20px; /* Adjust padding for summary */
+}
+
+summary {
+    cursor: pointer;
+    font-size: 1.8em; /* Match h3 size for summary title */
+    font-weight: 700;
+    color: var(--header-color);
+    padding: 10px 0; /* Padding inside the summary */
+    outline: none;
+    list-style: none; /* Hide default triangle */
+}
+
+summary::-webkit-details-marker {
+    display: none; /* Hide default triangle for Webkit browsers */
+}
+
+/* Add custom disclosure triangle */
+summary::before {
+    content: '►'; /* Right arrow */
+    margin-right: 10px;
+    transition: transform 0.2s ease-in-out;
+    display: inline-block;
+}
+
+details[open] summary::before {
+    content: '▼'; /* Down arrow when open */
+    transform: rotate(0deg); /* Reset rotation */
+}
+
+/* Adjust h2 within summary */
+details summary h2 {
+    display: inline; /* Keep h2 on the same line as the arrow */
+    border-bottom: none; /* Remove border from h2 in summary */
+    margin: 0;
+    padding: 0;
+    font-size: 1em; /* Make it relative to summary font size */
+    color: inherit; /* Inherit color from summary */
+}
+
+
 h3 {
     font-size: 1.8em;
     margin-top: 40px;
@@ -92,7 +180,7 @@ header {
 }
 
 section {
-    margin-bottom: 50px;
+    margin-bottom: 50px; /* This margin will be primarily handled by details margin now */
 }
 
 footer {
@@ -168,6 +256,7 @@ a:hover {
 .index-nav ul {
     list-style: none;
     padding: 0;
+    margin: 0; /* Remove default ul margin */
 }
 .index-nav li {
     background-color: var(--code-bg);
@@ -211,4 +300,28 @@ th {
 }
 td {
     font-family: monospace, monospace;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .content-columns {
+        flex-direction: column;
+        gap: 0; /* Remove gap when stacked */
+    }
+    .column {
+        min-width: unset; /* Remove min-width constraint */
+        width: 100%; /* Take full width */
+    }
+    .container {
+        padding: 15px;
+    }
+    header h1 {
+        font-size: 2.5em;
+    }
+    h2 {
+        font-size: 2em;
+    }
+    details summary {
+        font-size: 1.5em;
+    }
 }
