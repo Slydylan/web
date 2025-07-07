@@ -107,8 +107,7 @@
             overflow-y: auto; /* Enables vertical scrolling */
             overflow-x: hidden; /* Prevent horizontal scrolling if not needed */
             -webkit-overflow-scrolling: touch; /* Improves scrolling on iOS */
-            /* Add some padding-right to account for scrollbar width */
-            padding-right: 25px;
+            padding-right: 25px; /* Add some padding-right to account for scrollbar width */
         }
 
         .section-content.collapsed {
@@ -173,21 +172,22 @@
             margin: 0;
         }
         .intro-link li {
-            margin-bottom: 10px;
+            margin-bottom: 15px; /* Added margin to separate the links */
         }
         .intro-link li:last-child {
             margin-bottom: 0;
         }
         .intro-link a {
-            display: block;
             text-decoration: none;
             color: #2c3e50; /* Dark text */
             font-weight: 700;
             font-size: 1.2em;
-            transition: color 0.3s ease;
+            display: block; /* Ensures the whole clickable area */
+            transition: color 0.3s ease, transform 0.2s ease; /* Added transform for subtle hover effect */
         }
         .intro-link a:hover {
             color: #00bcd4; /* Cyan on hover */
+            transform: translateX(5px); /* Subtle shift on hover */
         }
         .intro-link a span {
             display: block;
@@ -224,7 +224,7 @@
 
             .intro-link a {
                 font-size: 1em;
-                padding: 15px 0; /* Adjust padding for intro link */
+                padding: 0; /* No extra padding on 'a' for smaller screens, controlled by li */
             }
         }
     </style>
