@@ -113,9 +113,11 @@
             padding: 15px 20px;
             display: block; /* Default to visible */
             transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-            max-height: 500px; /* Max height for transition effect */
+            max-height: 500px; /* Max height for transition effect, now enables scrolling */
             opacity: 1;
-            overflow: hidden; /* Hide overflow during collapse transition */
+            overflow-y: auto; /* THIS IS THE KEY CHANGE: Enables vertical scrolling */
+            overflow-x: hidden; /* Prevent horizontal scrolling if not needed */
+            -webkit-overflow-scrolling: touch; /* Improves scrolling on iOS */
         }
 
         .section-content.collapsed {
@@ -237,7 +239,7 @@
         </header>
         <main>
             <section class="intro-link">
-                <a href="READTHISFIRST.html">Important Introduction: Please Read This First!<span>Clear up common misnomers and foundational concepts.</span></a>
+                <a href="READTHISFIRST.HTML">Important Introduction: Please Read This First!<span>Clear up common misnomers and foundational concepts.</span></a>
             </section>
 
             <div class="main-content">
@@ -320,23 +322,23 @@
         function toggleSection(sectionId) {
             const section = document.getElementById(sectionId);
             const content = section.querySelector('.section-content');
-            const header = section.querySelector('.section-header'); // Get the header element
+            const header = section.querySelector('.section-header');
             content.classList.toggle('collapsed');
-            header.classList.toggle('collapsed'); // Toggle collapsed class on header as well
+            header.classList.toggle('collapsed');
         }
 
         // Initialize all sections as collapsed except "Core Theory"
         document.addEventListener('DOMContentLoaded', () => {
-            const sections = document.querySelectorAll('section:not(.intro-link)'); // Exclude the intro link section
+            const sections = document.querySelectorAll('section:not(.intro-link)');
             sections.forEach(section => {
                 const content = section.querySelector('.section-content');
                 const header = section.querySelector('.section-header');
 
-                if (section.id !== 'core-theory') { // Only collapse if not 'core-theory'
-                    if (content) { // Check if content exists
+                if (section.id !== 'core-theory') {
+                    if (content) {
                         content.classList.add('collapsed');
                     }
-                    if (header) { // Check if header exists
+                    if (header) {
                         header.classList.add('collapsed');
                     }
                 }
