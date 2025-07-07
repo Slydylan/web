@@ -161,23 +161,33 @@
         .intro-link {
             width: 100%;
             margin-bottom: 30px;
-        }
-        .intro-link a {
-            display: block;
             background-color: #e0f7fa; /* Light blue background */
             padding: 20px 25px;
             border-left: 6px solid #00bcd4; /* Cyan border */
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .intro-link ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .intro-link li {
+            margin-bottom: 10px;
+        }
+        .intro-link li:last-child {
+            margin-bottom: 0;
+        }
+        .intro-link a {
+            display: block;
             text-decoration: none;
             color: #2c3e50; /* Dark text */
             font-weight: 700;
             font-size: 1.2em;
-            border-radius: 8px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: color 0.3s ease;
         }
         .intro-link a:hover {
-            background-color: #b2ebf2; /* Darker blue on hover */
-            transform: translateY(-2px); /* Slight lift effect */
+            color: #00bcd4; /* Cyan on hover */
         }
         .intro-link a span {
             display: block;
@@ -214,7 +224,7 @@
 
             .intro-link a {
                 font-size: 1em;
-                padding: 15px 20px;
+                padding: 15px 0; /* Adjust padding for intro link */
             }
         }
     </style>
@@ -227,7 +237,10 @@
         </header>
         <main>
             <section class="intro-link">
-                <a href="READTHISFIRST.HTML">Important Introduction: Please Read This First!<span>Clear up common misnomers and foundational concepts.</span></a>
+                <ul>
+                    <li><a href="READTHISFIRST.HTML">Important Introduction: Please Read This First!<span>Clear up common misnomers and foundational concepts.</span></a></li>
+                    <li><a href="OURUNIVERSE.html">Our Universe: A Specific Solution<span>Understanding the specific compactification and laws of our reality.</span></a></li>
+                </ul>
             </section>
 
             <section id="core-theory">
@@ -316,7 +329,6 @@
                 const content = section.querySelector('.section-content');
                 const header = section.querySelector('.section-header');
 
-                // Only collapse if not 'core-theory'
                 if (section.id !== 'core-theory') {
                     if (content) {
                         content.classList.add('collapsed');
