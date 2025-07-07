@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Big Bang: A Generative Narrative</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Inter', sans-serif; }
+        canvas { display: block; }
+        #narrative-panel {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #555;
+            border-radius: 10px;
+            font-size: 18px;
+            line-height: 1.5;
+            text-align: center;
+        }
+        #phase-title { font-weight: 700; font-size: 22px; color: #ffdf80; }
+        #phase-description { font-size: 16px; color: #ccc; }
+
+        .back-link {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 5px;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            z-index: 10;
+        }
+        .back-link:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+            border-color: #fff;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="narrative-panel">
+        <div id="phase-title">Phase I: The Singularity</div>
+        <div id="phase-description">A chaotic, undifferentiated field of pure potential.</div>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Core Simulation Parameters ---
+        const GRID_SIZE = 30;
+        const TOTAL_POINTS = GRID_SIZE * GRID_SIZE * GRID_SIZE;
+        const PARTICLE_THRESHOLD = 0.98;
+
+        // --- Scene & Simulation State ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(GRID_SIZE, GRID_SIZE, GRID_SIZE + 30);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        let lattice_state; // [reality_val, mass_potential, prev_reality_val (for Asymptotic Float)]
+        const clock = new THREE.Clock();
+       
+        const latticeMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial(), TOTAL_POINTS);
+        scene.add(latticeMesh);
+
+        // --- Narrative Timeline ---
+        const NARRATIVE = [
+            { phase: "Phase I: The Singularity", duration: 5, description: "A chaotic, undifferentiated field of pure potential." },
+            { phase: "Phase II: Proto-Coherence", duration: 10, description: "The universe expands, simple order begins to form." },
+            { phase: "Phase III: Asymptotic Float Activation & Higgs Event", duration: 7, description: "The fundamental algorithm awakens, giving birth to Mass and driving true coherence." },
+            { phase: "Phase IV: First Matter", duration: 15, description: "Absences emerge in the massive regions of space, guided by the Float." },
+            { phase: "Phase V: Eternal Complexity", duration: 999, description: "A stable universe of emergent structure, continuously evolving under the Asymptotic Float." }
+        ];
+        let currentPhaseIndex = 0;
+
+        // --- Fibonacci Function for Asymptotic Float ---
+        const fibonacciCache = { 0: 0, 1: 1 };
+        function getFibonacci(n) {
+            if (fibonacciCache[n] !== undefined) {
+                return fibonacciCache[n];
+            }
+            // Limit calculation to prevent excessively large numbers and performance issues
+            // For a visual simulation, a practical limit is necessary.
+            // If F_t grows too large, 1/F_t becomes too small too quickly, damping chaos.
+            if (n > 40) { // Fibonacci 40 is already large (~100 million)
+                return fibonacciCache[40]; // Cap at a large but manageable value
+            }
+            fibonacciCache[n] = getFibonacci(n - 1) + getFibonacci(n - 2);
+            return fibonacciCache[n];
+        }
+
+        // --- Initialization ---
+        function init() {
+            lattice_state = new Array(TOTAL_POINTS).fill(0).map(() => [
+                Math.random() * 0.2, // reality_val
+                0,                   // mass_potential
+                Math.random() * 0.2  // prev_reality_val (initial state for float)
+            ]);
+            latticeMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(TOTAL_POINTS * 3), 3);
+            updateLatticeVisuals(0);
+        }
+
+        // --- Update & Visualization ---
+        function updateLatticeVisuals(elapsedTime) {
+            const dummy = new THREE.Object3D();
+            const color = new THREE.Color();
+            let phaseTime = 0;
+            let currentDiscreteTimeStep = Math.floor(elapsedTime); // For F_t calculation
+
+            // Determine current phase
+            let cumulativeDuration = 0;
+            for(let i = 0; i < NARRATIVE.length; i++) {
+                if (elapsedTime < cumulativeDuration + NARRATIVE[i].duration) {
+                    currentPhaseIndex = i;
+                    phaseTime = (elapsedTime - cumulativeDuration) / NARRATIVE[i].duration; // Progress within phase (0 to 1)
+                    break;
+                }
+                cumulativeDuration += NARRATIVE[i].duration;
+            }
+            if (elapsedTime >= cumulativeDuration) { // Lock to last phase
+                currentPhaseIndex = NARRATIVE.length - 1;
+                phaseTime = 1;
+            }
+
+            // Update UI
+            document.getElementById('phase-title').textContent = NARRATIVE[currentPhaseIndex].phase;
+            document.getElementById('phase-description').textContent = NARRATIVE[currentPhaseIndex].description;
+           
+            // Higgs Event trigger point
+            const higgs_center = new THREE.Vector3(GRID_SIZE / 2, GRID_SIZE / 2, GRID_SIZE / 2);
+            const higgs_radius = GRID_SIZE / 4;
+
+            for (let i = 0; i < TOTAL_POINTS; i++) {
+                const x = i % GRID_SIZE;
+                const y = Math.floor(i / GRID_SIZE) % GRID_SIZE;
+                const z = Math.floor(i / (GRID_SIZE * GRID_SIZE));
+
+                let [reality_val, mass_potential, prev_reality_val] = lattice_state[i];
+               
+                // Store current reality_val as prev_reality_val for next iteration
+                lattice_state[i][2] = reality_val;
+
+                // --- Animate State Based on Narrative Phase ---
+                switch(currentPhaseIndex) {
+                    case 0: // Singularity - Simple random fluctuations
+                        reality_val = THREE.MathUtils.lerp(reality_val, Math.random() * 0.2, 0.01);
+                        break;
+                    case 1: // Proto-Coherence - Simple linear pull towards a low coherence
+                        reality_val = THREE.MathUtils.lerp(reality_val, 0.5 + Math.random() * 0.1, phaseTime * 0.05);
+                        break;
+                    case 2: // Asymptotic Float Activation & Higgs Event
+                        const Ft = getFibonacci(currentDiscreteTimeStep + 2); // Use a slightly offset Ft to avoid 0 or 1
+                        const oneOverFt = 1 / (Ft === 0 ? 1 : Ft); // Avoid division by zero
+
+                        // Asymptotic Float Equation
+                        // V_t = (1 - 1/F_t) + (cos(pi * V_t-1 * F_t) / F_t)
+                        const floatTerm = (1 - oneOverFt) + (Math.cos(Math.PI * prev_reality_val * Ft) * oneOverFt);
+                        reality_val = THREE.MathUtils.lerp(reality_val, floatTerm, 0.1); // Smooth transition
+
+                        const dist = higgs_center.distanceTo(new THREE.Vector3(x, y, z));
+                        if (dist < higgs_radius) {
+                            // Flash of creation
+                            if (phaseTime > 0.8) { // Trigger towards the end of this phase
+                                mass_potential = 1.0;
+                                // Force coherence for Higgs region during activation flash
+                                reality_val = THREE.MathUtils.lerp(reality_val, 1.0, (phaseTime - 0.8) * 5);
+                            }
+                        }
+                        break;
+                    case 3: // First Matter - Asymptotic Float continues
+                    case 4: // Eternal Complexity - Asymptotic Float continues
+                        const Ft_post = getFibonacci(currentDiscreteTimeStep + 2);
+                        const oneOverFt_post = 1 / (Ft_post === 0 ? 1 : Ft_post);
+
+                        // V_t = (1 - 1/F_t) + (cos(pi * V_t-1 * F_t) / F_t)
+                        reality_val = (1 - oneOverFt_post) + (Math.cos(Math.PI * prev_reality_val * Ft_post) * oneOverFt_post);
+                        
+                        // Ensure reality_val stays within reasonable bounds [0, 1] for visual representation
+                        reality_val = Math.max(0, Math.min(1, reality_val));
+
+
+                        if (mass_potential > 0) {
+                            // Massive regions are more stable and coherent
+                            reality_val = THREE.MathUtils.lerp(reality_val, Math.max(PARTICLE_THRESHOLD, reality_val), 0.05);
+                         } else {
+                            // Non-massive regions still follow float but might be less "ordered"
+                            reality_val = THREE.MathUtils.lerp(reality_val, reality_val, 0.01);
+                         }
+                        break;
+                }
+                lattice_state[i][0] = reality_val; // Update reality_val
+                lattice_state[i][1] = mass_potential; // Update mass_potential
+
+
+                // --- Update Visuals ---
+                dummy.position.set(x - GRID_SIZE / 2, y - GRID_SIZE / 2, z - GRID_SIZE / 2);
+                const isParticle = reality_val >= PARTICLE_THRESHOLD;
+                // Scale non-particles to 1 (visible blocks) and particles to 0 (absences/holes)
+                const scale = isParticle ? 0 : 1;
+                dummy.scale.set(scale, scale, scale);
+                dummy.updateMatrix();
+                latticeMesh.setMatrixAt(i, dummy.matrix);
+               
+                // --- MODIFIED: High-Contrast Color Logic ---
+                let hue = 0.6 - (mass_potential * 0.5); // Blue (0.6) to Yellow/Gold (0.1)
+                let saturation = 1.0;
+                let lightness = 0.1 + (reality_val * 0.7); // Expanded lightness range
+
+                // Special effect for Higgs Event flash
+                if (currentPhaseIndex === 2) {
+                    const dist = higgs_center.distanceTo(new THREE.Vector3(x, y, z));
+                    if (dist < higgs_radius) {
+                        // The flash is brightest at the peak of the phase
+                        const flash = Math.sin(phaseTime * Math.PI); // A smooth pulse from 0 to 1 and back to 0
+                        lightness = Math.max(lightness, flash * 0.9);
+                        saturation = Math.max(0, 1.0 - flash); // Desaturate to white at the peak
+                    }
+                }
+               
+                color.setHSL(hue, saturation, lightness);
+                latticeMesh.setColorAt(i, color);
+            }
+            latticeMesh.instanceMatrix.needsUpdate = true;
+            latticeMesh.instanceColor.needsUpdate = true;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            const elapsedTime = clock.getElapsedTime();
+           
+            updateLatticeVisuals(elapsedTime);
+           
+            renderer.render(scene, camera);
+        }
+       
+        // --- Add Back Button ---
+        const backButton = document.createElement('a');
+        backButton.href = 'index.html';
+        backButton.textContent = 'Back to Index';
+        backButton.className = 'back-link';
+        document.body.appendChild(backButton);
+
+        init();
+        animate();
+    </script>
+</body>
+</html>
