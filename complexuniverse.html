@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nested Dimensions Reality Simulation</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; color: #fff; font-family: 'Inter', sans-serif; }
+        canvas { display: block; }
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid #444;
+            border-radius: 10px;
+            text-align: center;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .control-group {
+            text-align: left;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+        input[type="range"] {
+            width: 150px;
+            -webkit-appearance: none;
+            height: 8px;
+            background: #555;
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        #title-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        h1 { font-size: 2em; margin: 0; font-weight: 300; letter-spacing: 2px; color: #00e676; }
+        p { font-size: 0.9em; margin: 5px 0 0 0; color: #aaa; font-style: italic; }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="title-panel">
+        <h1>Nested Dimensions</h1>
+        <p>A simulation of emergent reality.</p>
+    </div>
+
+    <div id="controls">
+        <div class="control-group">
+            <label for="coherence-slider">Global Coherence (Ω)</label>
+            <input type="range" id="coherence-slider" min="0.01" max="0.99" value="0.5" step="0.01">
+        </div>
+        <div class="control-group">
+            <label for="chaos-slider">Chaos Factor (χ)</label>
+            <input type="range" id="chaos-slider" min="0.1" max="10.0" value="5.0" step="0.1">
+        </div>
+        <div class="control-group">
+            <label for="time-speed-slider">Time Flow Speed</label>
+            <input type="range" id="time-speed-slider" min="0.01" max="2.0" value="0.5" step="0.01">
+        </div>
+    </div>
+
+    <script type="importmap">
+        { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- Core Scene Setup ---
+        const scene = new THREE.Scene();
+        // Increased camera far clipping plane to accommodate longer view distance
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000); 
+        camera.position.set(0, 0, 100); // Initial camera position
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; // Enable smooth camera movement
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = true; // Auto-rotate the scene
+        controls.autoRotateSpeed = 0.2;
+
+        // --- Simulation Parameters ---
+        const PARTICLE_COUNT = 500000; // Increased particle count for richer visuals
+        const FIELD_EXTENT = 150; // The spatial extent of the Omega Field
+
+        // --- Particle System Setup ---
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(PARTICLE_COUNT * 3); // x, y, z for each particle
+        const initialStates = new Float32Array(PARTICLE_COUNT); // V_t-1 for each particle
+
+        // Initialize particle positions and their initial "Reality Value" (V_t-1)
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            // Distribute particles randomly within a cube
+            positions[i * 3 + 0] = (Math.random() - 0.5) * FIELD_EXTENT * 2;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * FIELD_EXTENT * 2;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * FIELD_EXTENT * 2;
+            // Assign a random initial state (V_t-1) between 0 and 1
+            initialStates[i] = Math.random();
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('initialState', new THREE.BufferAttribute(initialStates, 1));
+
+        // --- Shader Material: The Core of the Multi-Dimensional Model ---
+        // This shader will calculate the position and color of each particle based on
+        // the emergent multi-dimensional logic.
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                u_time: { value: 0.0 }, // Global time for animation
+                u_field_extent: { value: FIELD_EXTENT }, // Extent of the simulation field
+                u_global_coherence: { value: 0.5 }, // Ω: User-controlled global coherence
+                u_chaos_factor: { value: 5.0 }, // χ: User-controlled chaos factor
+                u_time_speed: { value: 0.5 }, // User-controlled time flow speed
+            },
+            vertexShader: `
+                uniform float u_time;
+                uniform float u_field_extent;
+                uniform float u_global_coherence;
+                uniform float u_chaos_factor;
+                uniform float u_time_speed;
+
+                attribute float initialState; // V_t-1 for this particle
+
+                varying float v_coherence_level; // Pass coherence to fragment shader for coloring
+                varying float v_dimensional_fidelity; // For culling/fading based on depth
+
+                // --- Constants for the Multi-Dimensional Model ---
+                const float PI = 3.14159265359;
+                const float PHI = 1.61803398875; // Golden Ratio
+
+                // --- 4D Simplex Noise Function (from BIG_BANG.html for procedural field) ---
+                // Author: Ian McEwan, Ashima Arts. License: MIT.
+                vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                float mod289(float x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+                vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+                float permute(float x) { return mod289(((x*34.0)+1.0)*x); }
+                
+                vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+                float taylorInvSqrt(float r) { return 1.79284291400159 - 0.85373472095314 * r; } // Added float overload
+
+                vec4 grad4(float j, vec4 ip) {
+                    const vec4 ones = vec4(1.0, 1.0, 1.0, -1.0);
+                    vec4 p,s;
+                    p.xyz = floor( fract (vec3(j) * ip.xyz) * 7.0) * ip.z - 1.0;
+                    p.w = 1.5 - dot(abs(p.xyz), ones.xyz);
+                    s = vec4(lessThan(p, vec4(0.0)));
+                    p.xyz = p.xyz + (s.xyz*2.0 - 1.0) * s.www;
+                    return p;
+                }
+
+                float snoise(vec4 v) {
+                    const vec2 C = vec2(0.1381966011250105, 0.3090169943749475);
+                    vec4 i  = floor(v + dot(v, C.yyyy) );
+                    vec4 x0 = v - i + dot(i, C.xxxx);
+
+                    vec4 i0;
+                    vec3 isX = step( x0.yzw, x0.xxx );
+                    vec3 isYZ = step( x0.zww, x0.yyz );
+                    i0.x = isX.x + isX.y + isX.z;
+                    i0.yzw = 1.0 - isX;
+                    i0.y += isYZ.x + isYZ.y;
+                    i0.zw += 1.0 - isYZ.xy;
+                    i0.z += isYZ.z;
+                    i0.w += 1.0 - isYZ.z;
+
+                    vec4 i3 = clamp( i0, 0.0, 1.0 );
+                    vec4 i2 = clamp( i0-1.0, 0.0, 1.0 );
+                    vec4 i1 = clamp( i0-2.0, 0.0, 1.0 );
+
+                    vec4 x1 = x0 - i1 + C.xxxx;
+                    vec4 x2 = x0 - i2 + C.yyyy;
+                    vec4 x3 = x0 - i3 + 0.5;
+                    vec4 x4 = x0 - 1.0 + 0.75;
+
+                    i = mod289(i);
+                    float j0 = permute( permute( permute( permute(i.w) + i.z) + i.y) + i.x);
+                    vec4 j1 = permute( permute( permute( permute (
+                                i.w + vec4(i1.w, i2.w, i3.w, 1.0 ))
+                            + i.z + vec4(i1.z, i2.z, i3.z, 1.0 ))
+                            + i.y + vec4(i1.y, i2.y, i3.y, 1.0 ))
+                            + i.x + vec4(i1.x, i2.x, i3.x, 1.0 ));
+
+                    const vec4 ip = vec4(1.0/294.0, 1.0/49.0, 1.0/7.0, 0.0) ;
+
+                    vec4 p0 = grad4(j0,   ip);
+                    vec4 p1 = grad4(j1.x, ip);
+                    vec4 p2 = grad4(j1.y, ip);
+                    vec4 p3 = grad4(j1.z, ip);
+                    vec4 p4 = grad4(j1.w, ip);
+
+                    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+                    p0 *= norm.x;
+                    p1 *= norm.y;
+                    p2 *= norm.z;
+                    p3 *= norm.w;
+                    p4 *= taylorInvSqrt(dot(p4,p4));
+
+                    vec3 m0 = max(0.6 - vec3(dot(x0,x0), dot(x1,x1), dot(x2,x2)), 0.0);
+                    vec2 m1 = max(0.6 - vec2(dot(x3,x3), dot(x4,x4)), 0.0);
+                    m0 = m0 * m0;
+                    m1 = m1 * m1;
+                    return 49.0 * ( dot(m0*m0, vec3( dot( p0, x0 ), dot( p1, x1 ), dot( p2, x2 )))
+                                + dot(m1*m1, vec2( dot( p3, x3 ), dot( p4, x4 ) )) ) ;
+                }
+
+                // --- Asymptotic Float Algorithm (Core Evolution Law) ---
+                // V_t = (1 - 1/F_t) + (cos(PI * V_t-1 * F_t) / F_t)
+                // F_t is approximated here by a time-dependent function for continuous simulation
+                float calculateAsymptoticFloat(float prev_V, float current_t) {
+                    // Approximate F_t (Fibonacci number) with exponential growth for continuous time
+                    // This creates the "asymptotic pull" and "damping factor"
+                    float F_t_approx = exp(current_t * 0.1); // Simplified for continuous time
+                    if (F_t_approx < 1.0) F_t_approx = 1.0; // Avoid division by zero or very small numbers
+
+                    // Asymptotic Pull term (drives V_t towards 1.0)
+                    float asymptotic_pull = (1.0 - (1.0 / F_t_approx));
+
+                    // Chaos Engine term (introduces non-linearity and complexity)
+                    // V_t-1 is the particle's previous state, modulated by global chaos
+                    float chaos_term = cos(PI * prev_V * F_t_approx * u_chaos_factor);
+                    chaos_term /= F_t_approx; // Damping factor
+
+                    return asymptotic_pull + chaos_term;
+                }
+
+                // --- Seeded Algorithmic Derivation (SAD) for "Infinite Precision" Numbers ---
+                // This function generates a deterministic, chaotic float between 0.0 and 1.0
+                // based on an integer seed. Used to derive properties of nested dimensions.
+                float getNormalizedFloat(int seed) {
+                    // Simple hash function for demonstration. In a real system, use a more robust one.
+                    int hash = seed;
+                    hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
+                    hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
+                    hash = ((hash >> 16) ^ hash);
+                    return float(hash & 0x00FFFFFF) / float(0x00FFFFFF);
+                }
+
+                // --- The Ladder of Emergence (Dimensions 1-9) ---
+                // This is where the nested dimensional logic is applied.
+                // Each dimension's "value" influences the next.
+                vec3 calculateMultiDimensionalState(vec3 pos, float current_V, float time_val, float seed_val) {
+                    // Dimensions 1-3: The Physical Stage (S) - inherent in particle position
+                    // S = position (already vec3 pos)
+
+                    // Dimension 4: Modulated Time (T)
+                    // T = chaotic(S) * energetic_max
+                    // We'll use the particle's initial state (as a proxy for its "history" or energetic_max)
+                    // and a spatial noise for chaotic(S).
+                    float energetic_max = current_V; // Proxy for accumulated coherence
+                    float spatial_chaos = snoise(vec4(pos * 0.01, seed_val)); // Using snoise from BIG_BANG.html
+                    float D4_ModulatedTime = (spatial_chaos + 1.0) * 0.5 * energetic_max; // Normalize noise to 0-1
+
+                    // Dimension 5: The Plane of Agency (A)
+                    // A = (omega * energetic_max) * chaotic(S)
+                    // Here, omega is global_coherence, energetic_max is current_V, chaotic(S) is spatial_chaos
+                    float D5_Agency = u_global_coherence * current_V * (spatial_chaos + 1.0) * 0.5;
+
+                    // Dimension 6: The Semantic Space (Σ)
+                    // Σ = A_1 * A_2 * ... * A_n (Multiplication/interference of multiple agents' D5 values)
+                    // For a single particle, we'll model its "semantic potential" based on its agency
+                    float D6_Semantic = D5_Agency * getNormalizedFloat(int(seed_val * 1000.0) + 1);
+
+                    // Dimension 7: The River of Culture (K)
+                    // K = Σ * energetic_max
+                    float D7_Culture = D6_Semantic * energetic_max;
+
+                    // Dimension 8: The Archetypal Lattice (L)
+                    // L is a "crystallization" of coherence from D7.
+                    // For visualization, we'll make particles with high D7 values "snap" to a lattice-like structure
+                    // and have higher fidelity.
+                    float D8_Archetypal = D7_Culture; // Use D7 as a proxy for archetypal potential
+
+                    // Dimension 9: The Chrysalis of Metamorphosis (Ψ)
+                    // Ψ comes from the drive of further coherence in D8.
+                    float D9_Chrysalis = D8_Archetypal * u_global_coherence; // Driven by D8 and global coherence
+
+                    // --- Positional Transformation based on Higher Dimensions ---
+                    // The higher dimensions influence the particle's manifest position and fidelity.
+                    // Particles with higher D9_Chrysalis values are more "developed" and coherent.
+                    vec3 transformed_pos = pos;
+
+                    // D5 (Agency) influences a subtle self-motion
+                    transformed_pos += normalize(vec3(getNormalizedFloat(int(seed_val * 1000.0) + 2), getNormalizedFloat(int(seed_val * 1000.0) + 3), getNormalizedFloat(int(seed_val * 1000.0) + 4)) - 0.5) * D5_Agency * 5.0;
+
+                    // D8 (Archetypal Lattice) pulls particles towards an emergent grid
+                    // This is a simplified lattice effect for visualization
+                    float lattice_strength = smoothstep(0.7, 1.0, D8_Archetypal); // Only strong for high archetypal values
+                    transformed_pos.x = mix(transformed_pos.x, round(transformed_pos.x / 10.0) * 10.0, lattice_strength);
+                    transformed_pos.y = mix(transformed_pos.y, round(transformed_pos.y / 10.0) * 10.0, lattice_strength);
+                    transformed_pos.z = mix(transformed_pos.z, round(transformed_pos.z / 10.0) * 10.0, lattice_strength);
+
+                    // D9 (Chrysalis) influences overall scale and "stability"
+                    float scale_factor = 1.0 + D9_Chrysalis * 0.5; // More developed particles are slightly larger
+                    transformed_pos *= scale_factor;
+
+                    // Pass values to fragment shader
+                    v_coherence_level = current_V; // Overall coherence of the particle
+                    // Dimensional fidelity: Higher D9 means higher fidelity (more "real")
+                    v_dimensional_fidelity = D9_Chrysalis;
+
+                    return transformed_pos;
+                }
+
+
+                void main() {
+                    // Calculate the current Reality Value (V_t) for this particle
+                    // The 'initialState' attribute acts as V_t-1 for the first frame,
+                    // and then subsequent frames implicitly use the previous frame's calculated V_t
+                    // through the continuous nature of shaders and animation loop.
+                    float current_V = calculateAsymptoticFloat(initialState, u_time * u_time_speed);
+                    current_V = clamp(current_V, 0.0, 1.0); // Keep V_t between 0 and 1
+
+                    // Apply the multi-dimensional transformations
+                    vec3 transformed_position = calculateMultiDimensionalState(position, current_V, u_time, initialState);
+
+                    // Dynamic Culling/Fidelity based on distance and dimensional development
+                    vec4 modelViewPosition = modelViewMatrix * vec4(transformed_position, 1.0);
+                    gl_Position = projectionMatrix * modelViewPosition;
+
+                    // Calculate distance from camera for culling/fading
+                    float dist_from_camera = length(modelViewPosition.xyz);
+                    // Extended fade start and end to increase view distance
+                    float fade_start = 1.5 * u_field_extent; 
+                    float fade_end = 2.0 * u_field_extent; 
+                    float fade_factor = smoothstep(fade_start, fade_end, dist_from_camera);
+
+                    // Fidelity based on dimensional development and distance
+                    // Particles with low dimensional_fidelity are smaller and fade out quicker
+                    float base_point_size = 3.0; // Base size for all particles
+                    gl_PointSize = base_point_size * (1.0 - fade_factor) * v_dimensional_fidelity * 5.0; // Size scales with fidelity and fades with distance
+                    gl_PointSize = max(gl_PointSize, 0.1); // Minimum size to prevent disappearing too soon
+
+                    // Cull particles that are too far or have very low fidelity
+                    if (gl_PointSize < 0.2 || dist_from_camera > fade_end) {
+                        gl_Position = vec4(2.0, 2.0, 2.0, 1.0); // Move off-screen to cull
+                    }
+                }
+            `,
+            fragmentShader: `
+                varying float v_coherence_level;
+                varying float v_dimensional_fidelity;
+
+                // --- HSL to RGB conversion (from BIG_BANG.html) ---
+                vec3 hsl2rgb(vec3 c) {
+                    vec3 rgb = clamp(abs(mod(c.x*6.0+vec3(0.0,4.0,2.0),6.0)-3.0)-1.0, 0.0, 1.0);
+                    return c.z + c.y * (rgb-0.5)*(1.0-abs(2.0*c.z-1.0));
+                }
+
+                void main() {
+                    // Color based on coherence level and dimensional fidelity
+                    float hue = mix(0.0, 0.6, v_coherence_level); // Red for low coherence, Blue/Purple for high
+                    float saturation = 1.0;
+                    float lightness = mix(0.1, 0.8, v_dimensional_fidelity); // Dimmer for low fidelity, brighter for high
+
+                    vec3 color = hsl2rgb(vec3(hue, saturation, lightness));
+
+                    // Fade out at edges of the point (circular fade)
+                    float dist = distance(gl_PointCoord, vec2(0.5));
+                    float alpha = 1.0 - smoothstep(0.4, 0.5, dist);
+
+                    // Apply overall fidelity fade
+                    alpha *= v_dimensional_fidelity;
+
+                    gl_FragColor = vec4(color, alpha);
+                }
+            `,
+            blending: THREE.AdditiveBlending, // For glowing, overlapping particles
+            depthWrite: false, // Important for additive blending
+            transparent: true
+        });
+
+        const points = new THREE.Points(geometry, material);
+        scene.add(points);
+
+        // --- UI Listeners ---
+        const coherenceSlider = document.getElementById('coherence-slider');
+        const chaosSlider = document.getElementById('chaos-slider');
+        const timeSpeedSlider = document.getElementById('time-speed-slider');
+
+        coherenceSlider.addEventListener('input', (e) => material.uniforms.u_global_coherence.value = parseFloat(e.target.value));
+        chaosSlider.addEventListener('input', (e) => material.uniforms.u_chaos_factor.value = parseFloat(e.target.value));
+        timeSpeedSlider.addEventListener('input', (e) => material.uniforms.u_time_speed.value = parseFloat(e.target.value));
+
+        // --- Animation Loop ---
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update global time uniform
+            material.uniforms.u_time.value += 0.01 * material.uniforms.u_time_speed.value;
+
+            controls.update(); // Update OrbitControls
+            renderer.render(scene, camera); // Render the scene
+        }
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Start the animation loop when the window loads
+        window.onload = function () {
+            animate();
+        };
+    </script>
+</body>
+</html>
