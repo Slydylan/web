@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Our Best Guess For Now - The 9D Fibonacci Vector</title>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" id="MathJax-script" async></script>
+    <title>Our Best Guess For Now - The 9D Fibonacci Vector (Simplified)</title>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
@@ -100,25 +99,25 @@
         <section id="phase1">
             <h2>Phase 1: Deconstruction and Foundational Refinement</h2>
             <p>
-                The initial formalism presented a critical flaw: its base case for the first dimension, $s_1 = F_n \pmod{F_2}$, invariably yields zero, as any number modulo 1 is 0. This trivial outcome would prevent any unique information from propagating through the recursive chain. To rectify this, we must refine the algorithm's foundational inputs and its starting point.
+                The initial formalism presented a critical flaw: its base case for the first dimension, s<sub>1</sub> = F<sub>n</sub> mod F<sub>2</sub>, invariably yields zero, as any number modulo 1 is 0. This trivial outcome would prevent any unique information from propagating through the recursive chain. To rectify this, we must refine the algorithm's foundational inputs and its starting point.
             </p>
-            <h3>The Master Seed Complex Number ($Z_M$)</h3>
+            <h3>The Master Seed Complex Number (Z<sub>M</sub>)</h3>
             <p>
                 We redefine the primordial origin point, the Master Seed, as a complex number. This form intrinsically contains both a quantitative magnitude and a qualitative direction, embedding the cyclical nature of reality into the seed itself.
             </p>
             <div class="formula-block">
-                $$ Z_M = A \cdot e^{i\theta} = A(\cos\theta + i\sin\theta) $$
+                Z<sub>M</sub> = A &middot; e<sup>i&theta;</sup> = A(cos&theta; + i&middot;sin&theta;)
             </div>
             <ul>
-                <li><strong>Amplitude ($A$):</strong> A positive integer representing the raw, quantitative potential of the universal instance. The Omega Field Potential is derived from this: $F_A$.</li>
-                <li><strong>Phase Angle ($\theta$):</strong> A real number ($0 \le \theta < 2\pi$) representing the universe's fundamental qualitative orientation or "flavor."</li>
+                <li><strong>Amplitude (A):</strong> A positive integer representing the raw, quantitative potential of the universal instance. The Omega Field Potential is derived from this: F<sub>A</sub>.</li>
+                <li><strong>Phase Angle (&theta;):</strong> A real number (0 &le; &theta; &lt; 2&pi;) representing the universe's fundamental qualitative orientation or "flavor."</li>
             </ul>
             <h3>The Revised Base Case</h3>
             <p>
-                The first dimension's seed ($s_1$) must be a direct and meaningful imprint of the Master Seed. We redefine its derivation to use both components of $Z_M$ and the first non-trivial Fibonacci constraint ($F_3=2$) to establish a foundational binary choice.
+                The first dimension's seed (s<sub>1</sub>) must be a direct and meaningful imprint of the Master Seed. We redefine its derivation to use both components of Z<sub>M</sub> and the first non-trivial Fibonacci constraint (F<sub>3</sub>=2) to establish a foundational binary choice.
             </p>
             <div class="formula-block">
-                $$ s_1 = (A + \lfloor A \cdot \cos\theta \rfloor) \pmod{F_3} $$
+                s<sub>1</sub> = (A + &lfloor;A &middot; cos&theta;&rfloor;) mod F<sub>3</sub>
             </div>
         </section>
 
@@ -129,32 +128,32 @@
             </p>
 
             <h3>Dimensions 1-3: The Spatial Bootstrap (Geometry)</h3>
-            <p>These dimensions establish the fabric of 3D space, biased by the fundamental constant of cycles, $\pi$.</p>
+            <p>These dimensions establish the fabric of 3D space, biased by the fundamental constant of cycles, &pi;.</p>
             <div class="formula-block">
-                $$ s_1 = (A + \lfloor A \cdot \cos\theta \rfloor) \pmod{F_3} $$
-                $$ s_2 = (F_A + s_1 + \lfloor A \cdot \sin\theta \rfloor) \pmod{F_4} $$
-                $$ s_3 = (F_A + s_2 + \lfloor \pi \cdot s_2 \rfloor) \pmod{F_5} $$
+                s<sub>1</sub> = (A + &lfloor;A &middot; cos&theta;&rfloor;) mod F<sub>3</sub> <br><br>
+                s<sub>2</sub> = (F<sub>A</sub> + s<sub>1</sub> + &lfloor;A &middot; sin&theta;&rfloor;) mod F<sub>4</sub> <br><br>
+                s<sub>3</sub> = (F<sub>A</sub> + s<sub>2</sub> + &lfloor;&pi; &middot; s<sub>2</sub>&rfloor;) mod F<sub>5</sub>
             </div>
 
             <h3>Dimension 4: Local Time (Chronometry)</h3>
             <p>Time's properties are exponentially sensitive to the underlying geometry of space, hence the squared term.</p>
             <div class="formula-block">
-                $$ s_4 = (F_A + s_3^2) \pmod{F_6} $$
+                s<sub>4</sub> = (F<sub>A</sub> + s<sub>3</sub><sup>2</sup>) mod F<sub>6</sub>
             </div>
 
             <h3>Dimension 5: Qualia & Coherence (Phenomenology)</h3>
-            <p>This dimension is biased by the Golden Ratio, $\Phi$, governing the emergence of complex, self-organizing systems like life and consciousness.</p>
+            <p>This dimension is biased by the Golden Ratio, &Phi;, governing the emergence of complex, self-organizing systems like life and consciousness.</p>
             <div class="formula-block">
-                $$ s_5 = (F_A + s_4 + \lfloor \Phi \cdot s_4 \rfloor) \pmod{F_7} $$
+                s<sub>5</sub> = (F<sub>A</sub> + s<sub>4</sub> + &lfloor;&Phi; &middot; s<sub>4</sub>&rfloor;) mod F<sub>7</sub>
             </div>
 
             <h3>Dimensions 6-9: The Higher Planes (Metaphysics)</h3>
             <p>These dimensions govern the more abstract structures of reality, from causality to ultimate convergence.</p>
             <div class="formula-block">
-                $$ s_6 = (F_A + s_5) \pmod{F_8} \quad \text{(Causality & Archetypes)} $$
-                $$ s_7 = (F_A \cdot s_6) \pmod{F_9} \quad \text{(Inter-Reality Nexus)} $$
-                $$ s_8 = (s_7)^{s_1} \pmod{F_{10}} \quad \text{(Akashic/Information Field)} $$
-                $$ s_9 = \left(\sum_{d=1}^{8} s_d\right) \pmod{F_{11}} \quad \text{(Omega Point/Convergence)} $$
+                s<sub>6</sub> = (F<sub>A</sub> + s<sub>5</sub>) mod F<sub>8</sub> &nbsp;&nbsp;(Causality &amp; Archetypes) <br><br>
+                s<sub>7</sub> = (F<sub>A</sub> &middot; s<sub>6</sub>) mod F<sub>9</sub> &nbsp;&nbsp;(Inter-Reality Nexus) <br><br>
+                s<sub>8</sub> = (s<sub>7</sub>)<sup>s<sub>1</sub></sup> mod F<sub>10</sub> &nbsp;&nbsp;(Akashic/Information Field) <br><br>
+                s<sub>9</sub> = (&Sigma;<sub>d=1</sub><sup>8</sup> s<sub>d</sub>) mod F<sub>11</sub> &nbsp;&nbsp;(Omega Point/Convergence)
             </div>
         </section>
 
@@ -165,25 +164,25 @@
             </blockquote>
             <h3>Inputs:</h3>
             <ul>
-                <li><strong>Master Seed ($Z_M$):</strong> A complex number $A \cdot e^{i\theta}$.</li>
-                <li><strong>Fibonacci Sequence ($F_k$):</strong> The standard sequence $F_0=0, F_1=1, F_2=1, \dots$</li>
-                <li><strong>Fundamental Constants:</strong> $\pi$ and $\Phi$.</li>
+                <li><strong>Master Seed (Z<sub>M</sub>):</strong> A complex number A &middot; e<sup>i&theta;</sup>.</li>
+                <li><strong>Fibonacci Sequence (F<sub>k</sub>):</strong> The standard sequence F<sub>0</sub>=0, F<sub>1</sub>=1, F<sub>2</sub>=1, &hellip;</li>
+                <li><strong>Fundamental Constants:</strong> &pi; and &Phi;.</li>
             </ul>
             <h3>The Algorithm:</h3>
             <ol>
-                <li>Determine Omega Field Potential: $F_A$ where the index is the amplitude $A$.</li>
-                <li>Calculate $s_1$: $(A + \lfloor A \cdot \cos\theta \rfloor) \pmod{F_3}$</li>
-                <li>Calculate $s_2$: $(F_A + s_1 + \lfloor A \cdot \sin\theta \rfloor) \pmod{F_4}$</li>
-                <li>Calculate $s_3$: $(F_A + s_2 + \lfloor \pi \cdot s_2 \rfloor) \pmod{F_5}$</li>
-                <li>Calculate $s_4$: $(F_A + s_3^2) \pmod{F_6}$</li>
-                <li>Calculate $s_5$: $(F_A + s_4 + \lfloor \Phi \cdot s_4 \rfloor) \pmod{F_7}$</li>
-                <li>Calculate $s_6$: $(F_A + s_5) \pmod{F_8}$</li>
-                <li>Calculate $s_7$: $(F_A \cdot s_6) \pmod{F_9}$</li>
-                <li>Calculate $s_8$: $(s_7)^{s_1} \pmod{F_{10}}$</li>
-                <li>Calculate $s_9$: $(\sum_{d=1}^{8} s_d) \pmod{F_{11}}$</li>
+                <li>Determine Omega Field Potential: F<sub>A</sub> where the index is the amplitude A.</li>
+                <li>Calculate s<sub>1</sub>: (A + &lfloor;A &middot; cos&theta;&rfloor;) mod F<sub>3</sub></li>
+                <li>Calculate s<sub>2</sub>: (F<sub>A</sub> + s<sub>1</sub> + &lfloor;A &middot; sin&theta;&rfloor;) mod F<sub>4</sub></li>
+                <li>Calculate s<sub>3</sub>: (F<sub>A</sub> + s<sub>2</sub> + &lfloor;&pi; &middot; s<sub>2</sub>&rfloor;) mod F<sub>5</sub></li>
+                <li>Calculate s<sub>4</sub>: (F<sub>A</sub> + s<sub>3</sub><sup>2</sup>) mod F<sub>6</sub></li>
+                <li>Calculate s<sub>5</sub>: (F<sub>A</sub> + s<sub>4</sub> + &lfloor;&Phi; &middot; s<sub>4</sub>&rfloor;) mod F<sub>7</sub></li>
+                <li>Calculate s<sub>6</sub>: (F<sub>A</sub> + s<sub>5</sub>) mod F<sub>8</sub></li>
+                <li>Calculate s<sub>7</sub>: (F<sub>A</sub> &middot; s<sub>6</sub>) mod F<sub>9</sub></li>
+                <li>Calculate s<sub>8</sub>: (s<sub>7</sub>)<sup>s<sub>1</sub></sup> mod F<sub>10</sub></li>
+                <li>Calculate s<sub>9</sub>: (&Sigma;<sub>d=1</sub><sup>8</sup> s<sub>d</sub>) mod F<sub>11</sub></li>
             </ol>
             <h3>Output:</h3>
-            <p>The Genesis Key Vector: $S = [s_1, s_2, s_3, s_4, s_5, s_6, s_7, s_8, s_9]$.</p>
+            <p>The Genesis Key Vector: S = [s<sub>1</sub>, s<sub>2</sub>, s<sub>3</sub>, s<sub>4</sub>, s<sub>5</sub>, s<sub>6</sub>, s<sub>7</sub>, s<sub>8</sub>, s<sub>9</sub>].</p>
         </section>
 
         <section id="conceptual-summary">
@@ -193,7 +192,7 @@
             </p>
             <ul>
                 <li><strong>The Spiral Pulse:</strong> The use of the Fibonacci sequence as the modulus at each step means the entire creation process unfolds along a logarithmic spiral. Each new dimension is a "pulse" along this fundamental rhythm of growth and structure.</li>
-                <li><strong>Recursion as Evolution:</strong> The dependency of each seed component on the previous one ($s_d$ on $s_{d-1}$) creates a cascade of "spirals out of spirals." Each dimension is an evolution of the last, inheriting its properties while adding a new layer of complexity.</li>
+                <li><strong>Recursion as Evolution:</strong> The dependency of each seed component on the previous one (s<sub>d</sub> on s<sub>d-1</sub>) creates a cascade of "spirals out of spirals." Each dimension is an evolution of the last, inheriting its properties while adding a new layer of complexity.</li>
                 <li><strong>Wrapping as Manifestation:</strong> The modulo operation is the literal act of "wrapping." It takes the infinite potential of the universe and folds it into a finite, bounded, and structured set of initial conditions, allowing a specific reality to manifest.</li>
                 <li><strong>Infinite Extensibility:</strong> While this model is defined for 9 dimensions, its core logic is self-contained and could be extended indefinitely, with each new dimension being a further pulse along the foundational spiral, wrapped by the next term in the Fibonacci sequence.</li>
             </ul>
