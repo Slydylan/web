@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation: The 9D Fibonacci Vector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000000;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(10, 10, 20, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 380px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .vector-display {
+            font-family: 'Source Code Pro', monospace;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            word-break: break-all;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+        }
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #9333ea; /* Purple-500 */
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #9333ea;
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        .btn {
+            background-color: #8b5cf6; /* Violet-500 */
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #7c3aed; /* Violet-600 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+
+    <canvas id="simulationCanvas"></canvas>
+
+    <div id="controls" class="controls">
+        <h1 class="text-2xl font-bold text-white mb-4">Genesis Engine</h1>
+        
+        <div class="mb-4">
+            <label for="amplitude" class="block mb-2 text-sm font-medium text-gray-300">Master Seed Amplitude (A)</label>
+            <div class="flex items-center space-x-4">
+                <input type="range" id="amplitude" min="10" max="1000" value="150" class="w-full">
+                <span id="amplitudeValue" class="font-mono text-purple-300 w-12 text-center">150</span>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <label for="theta" class="block mb-2 text-sm font-medium text-gray-300">Master Seed Phase Angle (θ)</label>
+             <div class="flex items-center space-x-4">
+                <input type="range" id="theta" min="0" max="6.283" step="0.01" value="1.618" class="w-full">
+                <span id="thetaValue" class="font-mono text-purple-300 w-12 text-center">1.62</span>
+            </div>
+        </div>
+
+        <button id="regenerate" class="w-full py-2 px-4 text-white font-semibold rounded-lg shadow-md btn">
+            Regenerate Universe
+        </button>
+
+        <div class="vector-display mt-4">
+            <h2 class="text-lg font-semibold text-gray-200 mb-2">Genesis Key Vector [S]</h2>
+            <p id="vectorOutput" class="text-gray-400 text-xs"></p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let time = 0;
+        let genesisKey = [];
+
+        // --- UI Controls ---
+        const amplitudeSlider = document.getElementById('amplitude');
+        const amplitudeValue = document.getElementById('amplitudeValue');
+        const thetaSlider = document.getElementById('theta');
+        const thetaValue = document.getElementById('thetaValue');
+        const regenerateBtn = document.getElementById('regenerate');
+        const vectorOutput = document.getElementById('vectorOutput');
+
+        amplitudeSlider.oninput = () => amplitudeValue.textContent = amplitudeSlider.value;
+        thetaSlider.oninput = () => thetaValue.textContent = parseFloat(thetaSlider.value).toFixed(2);
+        regenerateBtn.onclick = initialize;
+
+        // --- Fibonacci Calculation ---
+        const fibCache = new Map();
+        function fibonacci(n) {
+            n = BigInt(n); // Use BigInt for calculations to avoid precision issues
+            if (n < 0) return 0n;
+            if (fibCache.has(n)) return fibCache.get(n);
+            if (n <= 1) return n;
+            
+            let a = 0n, b = 1n;
+            for (let i = 2n; i <= n; i++) {
+                let temp = a + b;
+                a = b;
+                b = temp;
+            }
+            fibCache.set(n, b);
+            return b;
+        }
+        // Define F in a scope accessible by all functions that need it.
+        const F = n => fibonacci(n);
+
+        // --- Genesis Key Algorithm ---
+        function calculateGenesisKey(A, theta) {
+            const s = new Array(9).fill(0);
+
+            const FA = F(A);
+            const PI = Math.PI;
+            const PHI = 1.61803398875;
+
+            // s1: Foundational Axis
+            s[0] = Number((BigInt(A) + BigInt(Math.floor(A * Math.cos(theta)))) % F(3));
+            // s2: Plane of Emergence
+            s[1] = Number((FA + BigInt(s[0]) + BigInt(Math.floor(A * Math.sin(theta)))) % F(4));
+            // s3: Volumetric Space
+            s[2] = Number((FA + BigInt(s[1]) + BigInt(Math.floor(PI * s[1]))) % F(5));
+            // s4: Local Time
+            s[3] = Number((FA + BigInt(s[2]**2)) % F(6));
+            // s5: Qualia & Coherence
+            s[4] = Number((FA + BigInt(s[3]) + BigInt(Math.floor(PHI * s[3]))) % F(7));
+            // s6: Causality & Archetypes
+            s[5] = Number((FA + BigInt(s[4])) % F(8));
+            // s7: Inter-Reality Nexus
+            s[6] = Number((FA * BigInt(s[5])) % F(9));
+            // s8: Akashic Field
+            s[7] = Number(BigInt(s[6]) ** BigInt(s[0]) % F(10));
+            // s9: Omega Point
+            const sumS = s.slice(0, 8).reduce((acc, val) => acc + BigInt(val), 0n);
+            s[8] = Number(sumS % F(11));
+
+            return s.map(val => isNaN(val) ? 0 : val); // Sanitize NaN results
+        }
+
+        // --- Visualization ---
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        function drawSpiral(s, index) {
+            const [s1, s2, s3, s4, s5, s6, s7, s8, s9] = s;
+            
+            // Map vector components to visual properties
+            const rotationDirection = s1 === 0 ? 1 : -1;
+            const numArms = (s2 % 5) + 2; // 2 to 6 arms
+            const growthRate = 0.05 + (s3 / Number(F(5))) * 0.1; // Controls how fast spiral expands
+            const timeSpeed = 0.0001 + (s4 / Number(F(6))) * 0.001;
+            const perturbation = s5 / Number(F(7)); // How wavy the arms are
+            const hue = (s6 / Number(F(8))) * 360;
+            const opacity = 0.2 + (s7 / Number(F(9))) * 0.8;
+            const particleCount = s8;
+            const coreColor = (s9 / Number(F(11))) * 360;
+
+            const timeFactor = time * timeSpeed * rotationDirection * (index * 0.5 + 1);
+
+            ctx.save();
+            ctx.globalAlpha = opacity;
+            ctx.strokeStyle = `hsla(${hue + index * 20}, 100%, 70%, ${opacity})`;
+            ctx.shadowColor = `hsla(${hue + index * 20}, 100%, 70%, 1)`;
+            ctx.shadowBlur = 15;
+            ctx.lineWidth = 1 + (index / 9) * 2;
+
+            for (let arm = 0; arm < numArms; arm++) {
+                ctx.beginPath();
+                const armOffset = (2 * Math.PI / numArms) * arm;
+                for (let i = 0; i < 200; i++) {
+                    const angle = 0.1 * i;
+                    const radius = Math.exp(growthRate * angle);
+                    
+                    const currentAngle = angle + timeFactor + armOffset;
+                    
+                    // Add perturbation for a more organic feel
+                    const perturbedAngle = currentAngle + Math.sin(angle * 8 + time * 0.001) * perturbation * 0.5;
+
+                    const x = width / 2 + radius * Math.cos(perturbedAngle) * (index + 1);
+                    const y = height / 2 + radius * Math.sin(perturbedAngle) * (index + 1);
+                    
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+            }
+            
+             // Draw central core
+            if (index === 0) {
+                ctx.beginPath();
+                ctx.arc(width/2, height/2, 5 + (s9/Number(F(11)))*10, 0, 2 * Math.PI);
+                ctx.fillStyle = `hsla(${coreColor}, 100%, 80%, 1)`;
+                ctx.shadowColor = `hsla(${coreColor}, 100%, 80%, 1)`;
+                ctx.shadowBlur = 20;
+                ctx.fill();
+            }
+
+            ctx.restore();
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0, 0, 5, 0.1)'; // Fading trail effect
+            ctx.fillRect(0, 0, width, height);
+            
+            // Draw a spiral for each dimension
+            for (let i = 0; i < 9; i++) {
+                drawSpiral(genesisKey, i);
+            }
+
+            time++;
+            requestAnimationFrame(animate);
+        }
+
+        function initialize() {
+            const A = parseInt(amplitudeSlider.value);
+            const theta = parseFloat(thetaSlider.value);
+            
+            // Pre-calculate needed Fibonacci numbers
+            fibonacci(A); // Largest one needed for FA
+            for(let i=2; i<=11; i++) fibonacci(i);
+
+            genesisKey = calculateGenesisKey(A, theta);
+            vectorOutput.textContent = `[ ${genesisKey.join(', ')} ]`;
+            
+            // Reset time to see the new universe form
+            time = 0;
+        }
+
+        window.onresize = resize;
+
+        // --- Start ---
+        resize();
+        initialize();
+        animate();
+    </script>
+</body>
+</html>
