@@ -1,420 +1,527 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Fractal Entrainment Prototype</title>
-<style>
-  body {
-    margin: 0;
-    background: #000;
-    color: #ddd;
-    font-family: sans-serif;
-    display: flex;
-    flex-direction: row;
-    height: 100vh;
-    overflow: hidden;
-  }
-  #controls {
-    width: 260px;
-    padding: 10px;
-    box-sizing: border-box;
-    background: #111;
-    overflow-y: auto;
-    font-size: 12px;
-  }
-  #controls h2 {
-    margin: 6px 0;
-    font-size: 14px;
-  }
-  #controls label {
-    display: block;
-    margin-top: 6px;
-  }
-  #controls input[type="number"],
-  #controls input[type="range"] {
-    width: 100%;
-  }
-  #canvasContainer {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #000;
-  }
-  #stimCanvas {
-    background: #000;
-    max-width: 100%;
-    max-height: 100%;
-  }
-  button {
-    margin-top: 6px;
-    width: 100%;
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Synthesis Oscillator</title>
+    <!-- Use Tailwind CSS via CDN for zero-build styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            overflow: hidden;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        /* Custom scrollbar for dropdowns if needed */
+        select option {
+            background-color: #171717; /* neutral-900 */
+            color: white;
+        }
+    </style>
 </head>
-<body>
+<body class="text-xs text-white selection:bg-blue-500">
 
-<div id="controls">
-  <h2>Fractal Entrainment</h2>
+    <!-- Background WebGL Canvas -->
+    <canvas id="glcanvas" class="absolute inset-0 w-full h-full z-0 block"></canvas>
 
-  <label>Monitor width (cm)
-    <input id="monitorWidth" type="number" min="20" max="100" step="1" value="50">
-  </label>
+    <!-- Controls Panel -->
+    <div class="absolute top-4 left-4 z-10 w-80 bg-black/80 border border-neutral-800 p-4 rounded-md backdrop-blur-md flex flex-col gap-5 shadow-2xl">
+        <div>
+            <h1 class="text-lg font-bold text-neutral-100 tracking-wider">VISUAL SYNTH_</h1>
+            <p class="text-neutral-500 mb-2">PHASE-LOCKED OSCILLATOR</p>
+        </div>
 
-  <label>Viewing distance (cm)
-    <input id="viewDist" type="number" min="30" max="150" step="1" value="60">
-  </label>
+        <div class="space-y-4">
+            <!-- FREQUENCY -->
+            <div>
+                <div class="flex justify-between text-neutral-400 mb-1">
+                    <label>TARGET FREQ (Hz)</label>
+                    <span id="targetFreqDisplay">2.00</span>
+                </div>
+                <input type="range" id="targetFreqInput" min="0.1" max="15" step="0.1" value="2.0" class="w-full accent-neutral-300">
+            </div>
 
-  <label>Refresh rate (Hz)
-    <input id="refreshRate" type="number" min="30" max="240" step="1" value="60">
-  </label>
+            <!-- NESTED RATIO -->
+            <div>
+                <div class="flex justify-between text-neutral-400 mb-1">
+                    <label>NESTED RATIO (Int)</label>
+                    <span id="nestedRatioDisplay">x4</span>
+                </div>
+                <input type="range" id="nestedRatioInput" min="1" max="8" step="1" value="4" class="w-full accent-neutral-300">
+            </div>
 
-  <label>Target center frequency (Hz)
-    <input id="fCenter" type="number" min="5" max="80" step="1" value="40">
-  </label>
+            <!-- SPATIAL FREQUENCY -->
+            <div>
+                <div class="flex justify-between text-neutral-400 mb-1">
+                    <label>SPATIAL FREQ (k)</label>
+                    <span id="spatialFreqDisplay">20.0</span>
+                </div>
+                <input type="range" id="spatialFreqInput" min="1" max="50" step="0.5" value="20.0" class="w-full accent-neutral-300">
+            </div>
 
-  <label>Target band width (Hz)
-    <input id="fWidth" type="number" min="2" max="20" step="1" value="10">
-  </label>
+            <!-- MOD DEPTH -->
+            <div>
+                <div class="flex justify-between text-neutral-400 mb-1">
+                    <label>MOD DEPTH</label>
+                    <span id="modDepthDisplay">0.80</span>
+                </div>
+                <input type="range" id="modDepthInput" min="0" max="1" step="0.05" value="0.8" class="w-full accent-neutral-300">
+            </div>
 
-  <label>Inner radius fraction
-    <input id="innerFrac" type="range" min="0.05" max="0.3" step="0.01" value="0.1">
-  </label>
+            <hr class="border-neutral-800">
 
-  <label>Outer radius fraction
-    <input id="outerFrac" type="range" min="0.2" max="0.8" step="0.01" value="0.4">
-  </label>
+            <!-- SHAPE FIELD -->
+            <div class="space-y-3">
+                <label class="text-neutral-400 block">SHAPE FIELD</label>
+                <div class="flex gap-2">
+                    <select id="shapeAInput" class="flex-1 bg-neutral-900 border border-neutral-800 text-white p-1 rounded outline-none focus:border-neutral-500">
+                        <option value="0">CIRCLE</option>
+                        <option value="1">TRIANGLE</option>
+                        <option value="2">HEXAGON</option>
+                        <option value="3">FRACTAL</option>
+                        <option value="4">NOISE_RADIAL</option>
+                    </select>
+                    <span class="text-neutral-500 flex items-center">-&gt;</span>
+                    <select id="shapeBInput" class="flex-1 bg-neutral-900 border border-neutral-800 text-white p-1 rounded outline-none focus:border-neutral-500">
+                        <option value="0">CIRCLE</option>
+                        <option value="1">TRIANGLE</option>
+                        <option value="2" selected>HEXAGON</option>
+                        <option value="3">FRACTAL</option>
+                        <option value="4">NOISE_RADIAL</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <div class="flex justify-between text-neutral-400 mb-1 text-[10px]">
+                        <span>MORPH (Blend)</span>
+                        <span id="shapeBlendDisplay">0%</span>
+                    </div>
+                    <input type="range" id="shapeBlendInput" min="0" max="1" step="0.01" value="0" class="w-full accent-neutral-300">
+                </div>
+            </div>
 
-  <label>Spatial freq (cycles/deg)
-    <input id="kCycles" type="number" min="0.2" max="4.0" step="0.1" value="1.0">
-  </label>
+            <hr class="border-neutral-800">
 
-  <hr>
+            <!-- MODE TOGGLE -->
+            <div class="flex gap-2">
+                <button id="modePrecisionBtn" class="flex-1 py-1 rounded border transition-colors bg-white text-black border-white">
+                    PRECISION
+                </button>
+                <button id="modeAestheticBtn" class="flex-1 py-1 rounded border transition-colors bg-transparent text-neutral-400 border-neutral-800 hover:border-neutral-600">
+                    AESTHETIC
+                </button>
+            </div>
+        </div>
+    </div>
 
-  <label><input id="enableEnv" type="checkbox" checked> Enable envelope</label>
+    <!-- Diagnostics Panel -->
+    <div class="absolute bottom-4 right-4 z-10 w-64 bg-black/80 border border-neutral-800 p-3 rounded-md backdrop-blur-md shadow-2xl flex flex-col gap-1">
+        <div class="text-neutral-500 font-bold mb-1 border-b border-neutral-800 pb-1">SYSTEM DIAGNOSTICS</div>
+        
+        <div class="flex justify-between">
+            <span class="text-neutral-400">MEASURED FPS</span>
+            <span id="diagFps" class="text-green-400">0.0</span>
+        </div>
+        
+        <div class="flex justify-between">
+            <span class="text-neutral-400">REFRESH RATE (Fr)</span>
+            <span id="diagFr">60 Hz</span>
+        </div>
+        
+        <div class="flex justify-between">
+            <span class="text-neutral-400">LOCKED FREQ</span>
+            <span id="diagLockedFreq" class="text-blue-300">0.000 Hz</span>
+        </div>
 
-  <label>Fast depth
-    <input id="dFast" type="range" min="0" max="1" step="0.05" value="0.4">
-  </label>
+        <div class="flex justify-between">
+            <span class="text-neutral-400">FRAME JITTER (σ)</span>
+            <span id="diagJitter" class="text-neutral-300">0.00 ms</span>
+        </div>
 
-  <label>FM ratio (fast/medium)
-    <input id="rFM" type="range" min="4" max="16" step="1" value="8">
-  </label>
+        <div id="nyquistWarning" class="hidden mt-2 text-red-500 bg-red-950/50 p-1 rounded text-center border border-red-900/50">
+            WARN: NYQUIST VIOLATION<br>(Aliasing Expected)
+        </div>
+        <div id="jitterWarning" class="hidden mt-2 text-yellow-500 bg-yellow-950/50 p-1 rounded text-center border border-yellow-900/50">
+            WARN: HIGH FRAME JITTER<br>(Lock degraded)
+        </div>
+    </div>
 
-  <label>Medium depth
-    <input id="dMed" type="range" min="0" max="0.5" step="0.05" value="0.2">
-  </label>
+    <script>
+        // --- CONFIGURATION ---
+        const TARGET_FPS = 60;
+        const DIAGNOSTICS_UPDATE_MS = 250;
 
-  <label>Slow freq (Hz)
-    <input id="fSlow" type="number" min="0.01" max="0.2" step="0.01" value="0.05">
-  </label>
+        // --- SHADER CODE (WebGL 2.0) ---
+        const vertexShaderSource = `#version 300 es
+        in vec4 a_position;
+        out vec2 v_uv;
 
-  <label>Slow depth
-    <input id="dSlow" type="range" min="0" max="0.5" step="0.05" value="0.1">
-  </label>
+        void main() {
+            v_uv = a_position.xy * 0.5 + 0.5;
+            gl_Position = a_position;
+        }
+        `;
 
-  <label>Max brightness
-    <input id="maxBright" type="range" min="0.1" max="1" step="0.05" value="0.5">
-  </label>
+        const fragmentShaderSource = `#version 300 es
+        precision highp float;
 
-  <label>Session duration (min)
-    <input id="sessMin" type="number" min="1" max="20" step="1" value="5">
-  </label>
+        in vec2 v_uv;
+        out vec4 outColor;
 
-  <button id="startBtn">Start</button>
-  <button id="stopBtn">Stop</button>
-</div>
+        uniform vec2 u_resolution;
+        uniform float u_phase0;
+        uniform float u_phaseFast;
+        uniform int u_shapeA;
+        uniform int u_shapeB;
+        uniform float u_blend;
+        uniform float u_k;
+        uniform float u_modDepth;
+        uniform int u_mode;
 
-<div id="canvasContainer">
-  <canvas id="stimCanvas"></canvas>
-</div>
+        // --- Utility Functions ---
+        float hash(vec2 p) {
+            return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453123);
+        }
 
-<script>
-// Basic deterministic "noise" for fractal-like texture (fast & simple)
-function hash2d(x, y) {
-  var s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
-  return s - Math.floor(s);
-}
+        float valueNoise(vec2 p) {
+            vec2 i = floor(p); 
+            vec2 f = fract(p);
+            vec2 u = f*f*(3.0-2.0*f);
+            return mix(mix(hash(i + vec2(0.0,0.0)), hash(i + vec2(1.0,0.0)), u.x),
+                       mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
+        }
 
-// Build grayscale tile
-function makeTile(size) {
-  var off = document.createElement('canvas');
-  off.width = size;
-  off.height = size;
-  var ctx = off.getContext('2d');
-  var img = ctx.createImageData(size, size);
-  for (var y = 0; y < size; y++) {
-    for (var x = 0; x < size; x++) {
-      var v = 0;
-      // 3-octave fake fractal noise
-      var f = 1.0;
-      var amp = 1.0;
-      var norm = 0.0;
-      for (var o = 0; o < 3; o++) {
-        v += amp * hash2d(x * f, y * f);
-        norm += amp;
-        f *= 2.0;
-        amp *= 0.5;
-      }
-      v /= norm;
-      var c = Math.floor(v * 255);
-      var idx = (y * size + x) * 4;
-      img.data[idx] = c;
-      img.data[idx+1] = c;
-      img.data[idx+2] = c;
-      img.data[idx+3] = 255;
-    }
-  }
-  ctx.putImageData(img, 0, 0);
-  return off;
-}
+        // --- SDF Bank ---
+        float sdCircle(vec2 p) { return length(p); }
 
-(function() {
-  var canvas = document.getElementById('stimCanvas');
-  var ctx = canvas.getContext('2d');
+        float sdEqTriangle(vec2 p, float r) {
+            const float k = sqrt(3.0);
+            p.x = abs(p.x) - r;
+            p.y = p.y + r/k;
+            if(p.x + k*p.y > 0.0) p = vec2(p.x - k*p.y, -k*p.x - p.y) / 2.0;
+            p.x -= clamp(p.x, -2.0*r, 0.0);
+            return -length(p) * sign(p.y);
+        }
 
-  var running = false;
-  var startTime = 0;
-  var config = null;
-  var state = null;
-  var tileCanvas = null;
+        float sdHexagon(vec2 p, float r) {
+            const vec3 k = vec3(-0.866025404, 0.5, 0.577350269);
+            p = abs(p);
+            p -= 2.0 * min(dot(k.xy, p), 0.0) * k.xy;
+            p -= vec2(clamp(p.x, -k.z*r, k.z*r), r);
+            return length(p) * sign(p.y);
+        }
 
-  function readConfig() {
-    var screenWidthPx = window.innerWidth - 260; // approx canvas width region
-    var screenHeightPx = window.innerHeight;
-    canvas.width = screenWidthPx;
-    canvas.height = screenHeightPx;
+        float sdFractalTri(vec2 p) {
+            float s = 1.0;
+            vec2 n = normalize(vec2(1.0, 1.73205081));
+            for(int i = 0; i < 4; i++) {
+                p = abs(p) - vec2(0.5, 0.288) / s;
+                float d = dot(p, n);
+                p -= 2.0 * min(0.0, d) * n;
+                s *= 1.5;
+            }
+            return length(p) / s;
+        }
 
-    var monitorWidthCm = parseFloat(document.getElementById('monitorWidth').value) || 50;
-    var viewDistCm = parseFloat(document.getElementById('viewDist').value) || 60;
-    var refreshRate = parseFloat(document.getElementById('refreshRate').value) || 60;
+        float sdNoiseRadial(vec2 p) {
+            float r = length(p);
+            return r + valueNoise(p * 4.0) * 0.2;
+        }
 
-    var fCenter = parseFloat(document.getElementById('fCenter').value) || 40;
-    var fWidth  = parseFloat(document.getElementById('fWidth').value) || 10;
-    var innerFrac = parseFloat(document.getElementById('innerFrac').value);
-    var outerFrac = parseFloat(document.getElementById('outerFrac').value);
-    if (outerFrac <= innerFrac) outerFrac = innerFrac + 0.05;
-    var kCycles = parseFloat(document.getElementById('kCycles').value) || 1.0;
+        float getShape(int mode, vec2 p) {
+            switch(mode) {
+                case 0: return sdCircle(p);
+                case 1: return sdEqTriangle(p, 0.8);
+                case 2: return sdHexagon(p, 0.8);
+                case 3: return sdFractalTri(p);
+                case 4: return sdNoiseRadial(p);
+                default: return sdCircle(p);
+            }
+        }
 
-    var enableEnv = document.getElementById('enableEnv').checked;
-    var dFast = parseFloat(document.getElementById('dFast').value);
-    var rFM   = parseFloat(document.getElementById('rFM').value);
-    var dMed  = parseFloat(document.getElementById('dMed').value);
-    var fSlow = parseFloat(document.getElementById('fSlow').value);
-    var dSlow = parseFloat(document.getElementById('dSlow').value);
-    var maxBright = parseFloat(document.getElementById('maxBright').value);
-    var sessMin   = parseFloat(document.getElementById('sessMin').value);
+        void main() {
+            vec2 p = v_uv * 2.0 - 1.0;
+            p.x *= u_resolution.x / u_resolution.y;
+            p *= 1.5; 
 
-    // FOV
-    var fovRad = 2 * Math.atan((monitorWidthCm / 2) / viewDistCm);
-    var fovDeg = fovRad * 180 / Math.PI;
-    var pixelsPerDeg = screenWidthPx / fovDeg;
+            float d1 = getShape(u_shapeA, p);
+            float d2 = getShape(u_shapeB, p);
+            
+            float phi1 = u_k * d1;
+            float phi2 = u_k * d2;
+            float phi = mix(phi1, phi2, u_blend);
 
-    var RdegInner = (fovDeg / 2) * innerFrac;
-    var RdegOuter = (fovDeg / 2) * outerFrac;
-    var RpxInner = RdegInner * pixelsPerDeg;
-    var RpxOuter = RdegOuter * pixelsPerDeg;
-    var RdegMid = (RdegInner + RdegOuter) / 2;
+            float signal = sin(phi - u_phase0);
 
-    // tile size from spatial freq
-    var tileVisualWidthDeg = 1 / kCycles;
-    var tileWidthPxRaw = tileVisualWidthDeg * pixelsPerDeg;
-    var tileWidthPx = Math.max(100, Math.min(400, Math.round(tileWidthPxRaw)));
+            float slow = 0.5 + 0.5 * cos(u_phase0);
+            float fast = 0.5 + 0.5 * cos(u_phaseFast);
+            float envelope = mix(1.0, fast, slow * u_modDepth);
 
-    // choose f_target near center and aligned with refresh
-    var fMin = fCenter - fWidth / 2;
-    var fMax = fCenter + fWidth / 2;
-    var candidates = [];
-    for (var n = 2; n <= 20; n++) {
-      var fN = refreshRate / n;
-      if (fN >= fMin && fN <= fMax) candidates.push(fN);
-    }
-    var fTarget = fCenter;
-    if (candidates.length > 0) {
-      var best = candidates[0];
-      var bestDiff = Math.abs(best - fCenter);
-      for (var i = 1; i < candidates.length; i++) {
-        var d = Math.abs(candidates[i] - fCenter);
-        if (d < bestDiff) { bestDiff = d; best = candidates[i]; }
-      }
-      fTarget = best;
-    }
+            float sigMapped = 0.5 + 0.5 * signal;
+            vec3 baseColor;
+            
+            if (u_mode == 1) {
+                vec3 colA = vec3(0.5, 0.6, 0.8);
+                vec3 colB = vec3(0.2, 0.4, 0.6);
+                baseColor = mix(colB, colA, sigMapped);
+                baseColor += vec3(0.1, 0.2, 0.3) * (1.0 - smoothstep(0.0, 0.1, abs(d1)));
+            } else {
+                baseColor = vec3(1.0);
+            }
 
-    // rotation: f ≈ omega * k
-    var omegaDegPerSec = fTarget / kCycles;
-    var degPerFrame = omegaDegPerSec / refreshRate;
+            vec3 finalColor = baseColor * sigMapped * envelope;
 
-    // envelope frequencies
-    var fFast = fTarget;
-    var fMed = fFast / rFM;
+            float vignette = 1.0 - dot(v_uv - 0.5, v_uv - 0.5) * 0.5;
+            outColor = vec4(finalColor * vignette, 1.0);
+        }
+        `;
 
-    return {
-      screenWidthPx: screenWidthPx,
-      screenHeightPx: screenHeightPx,
-      monitorWidthCm: monitorWidthCm,
-      viewDistCm: viewDistCm,
-      refreshRate: refreshRate,
-      pixelsPerDeg: pixelsPerDeg,
-      fovDeg: fovDeg,
-      RdegInner: RdegInner,
-      RdegOuter: RdegOuter,
-      RpxInner: RpxInner,
-      RpxOuter: RpxOuter,
-      RdegMid: RdegMid,
-      kCycles: kCycles,
-      tileWidthPx: tileWidthPx,
-      fTarget: fTarget,
-      omegaDegPerSec: omegaDegPerSec,
-      degPerFrame: degPerFrame,
-      enableEnv: enableEnv,
-      dFast: dFast,
-      fFast: fFast,
-      fMed: fMed,
-      dMed: dMed,
-      fSlow: fSlow,
-      dSlow: dSlow,
-      maxBright: maxBright,
-      baseContrast: maxBright,
-      sessMin: sessMin
-    };
-  }
+        // --- APP STATE ---
+        const state = {
+            targetFreq: 2.0,
+            nestedRatio: 4,
+            modDepth: 0.8,
+            spatialFreq: 20.0,
+            shapeA: 0,
+            shapeB: 2,
+            shapeBlend: 0.0,
+            mode: 0, // 0: Precision, 1: Aesthetic
+            
+            // Smoothed parameters
+            smooth: {
+                modDepth: 0.8,
+                spatialFreq: 20.0,
+                shapeBlend: 0.0
+            }
+        };
 
-  function initState(cfg) {
-    return {
-      angleDeg: 0,
-      scale: 1.0,
-      t0: performance.now() / 1000
-    };
-  }
+        const time = {
+            lastTime: performance.now(),
+            frameTimes: Array(60).fill(1000 / TARGET_FPS),
+            frameIdx: 0,
+            phase0: 0,
+            lastDiagTime: 0
+        };
 
-  function computeEnvelope(cfg, t) {
-    if (!cfg.enableEnv) return cfg.baseContrast;
+        // --- CPU PHASE LOGIC ---
+        function lockFrequency(targetFreq, Fr) {
+            let bestError = Infinity;
+            let bestM = 0;
+            let bestN = 1;
+            
+            const maxN = 120;
+            for (let N = 1; N <= maxN; N++) {
+                let m = Math.round((targetFreq * N) / Fr);
+                let error = Math.abs((m / N) * Fr - targetFreq);
+                if (error < bestError) {
+                    bestError = error;
+                    bestM = m;
+                    bestN = N;
+                }
+            }
+            return { m: bestM, N: bestN, fLocked: (bestM / bestN) * Fr };
+        }
 
-    var E = 1.0;
-    var EF = 1 + cfg.dFast * Math.sin(2 * Math.PI * cfg.fFast * t);
-    E *= EF;
-    var EM = 1 + cfg.dMed * Math.sin(2 * Math.PI * cfg.fMed * t);
-    E *= EM;
-    var ES = 1 + cfg.dSlow * Math.sin(2 * Math.PI * cfg.fSlow * t);
-    E *= ES;
+        // --- DOM BINDING ---
+        function bindUI() {
+            const bindInput = (id, displayId, stateKey, isFloat = true, suffix = '', formatter = val => val) => {
+                const el = document.getElementById(id);
+                const display = document.getElementById(displayId);
+                el.addEventListener('input', (e) => {
+                    const val = isFloat ? parseFloat(e.target.value) : parseInt(e.target.value);
+                    state[stateKey] = val;
+                    if(display) display.textContent = formatter(val) + suffix;
+                });
+            };
 
-    // simple normalization/clamp
-    var maxDepth = 1 + (cfg.dFast + cfg.dMed + cfg.dSlow);
-    var norm = 1; // you can tweak if needed
-    var val = cfg.baseContrast * (E / norm);
-    if (val < 0) val = 0;
-    if (val > cfg.maxBright * maxDepth) val = cfg.maxBright * maxDepth;
-    return val;
-  }
+            bindInput('targetFreqInput', 'targetFreqDisplay', 'targetFreq', true, '', v => v.toFixed(2));
+            bindInput('nestedRatioInput', 'nestedRatioDisplay', 'nestedRatio', false, '', v => 'x' + v);
+            bindInput('spatialFreqInput', 'spatialFreqDisplay', 'spatialFreq', true, '', v => v.toFixed(1));
+            bindInput('modDepthInput', 'modDepthDisplay', 'modDepth', true, '', v => v.toFixed(2));
+            bindInput('shapeBlendInput', 'shapeBlendDisplay', 'shapeBlend', true, '%', v => (v * 100).toFixed(0));
 
-  function renderFrame(cfg, st) {
-    var w = cfg.screenWidthPx;
-    var h = cfg.screenHeightPx;
-    ctx.clearRect(0, 0, w, h);
+            document.getElementById('shapeAInput').addEventListener('change', (e) => { state.shapeA = parseInt(e.target.value); });
+            document.getElementById('shapeBInput').addEventListener('change', (e) => { state.shapeB = parseInt(e.target.value); });
 
-    var cx = w / 2;
-    var cy = h / 2;
+            const btnPrecision = document.getElementById('modePrecisionBtn');
+            const btnAesthetic = document.getElementById('modeAestheticBtn');
 
-    // background fill (black)
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, w, h);
+            const updateModeUI = () => {
+                if (state.mode === 0) {
+                    btnPrecision.className = "flex-1 py-1 rounded border transition-colors bg-white text-black border-white";
+                    btnAesthetic.className = "flex-1 py-1 rounded border transition-colors bg-transparent text-neutral-400 border-neutral-800 hover:border-neutral-600";
+                } else {
+                    btnPrecision.className = "flex-1 py-1 rounded border transition-colors bg-transparent text-neutral-400 border-neutral-800 hover:border-neutral-600";
+                    btnAesthetic.className = "flex-1 py-1 rounded border transition-colors bg-white text-black border-white";
+                }
+            };
 
-    if (!tileCanvas) return;
+            btnPrecision.addEventListener('click', () => { state.mode = 0; updateModeUI(); });
+            btnAesthetic.addEventListener('click', () => { state.mode = 1; updateModeUI(); });
+        }
 
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(st.angleDeg * Math.PI / 180);
-    ctx.scale(st.scale, st.scale);
+        // --- WEBGL INIT & LOOP ---
+        function initWebGL() {
+            const canvas = document.getElementById('glcanvas');
+            const gl = canvas.getContext('webgl2', { antialias: false });
+            
+            if (!gl) {
+                alert("WebGL 2.0 not supported in your browser.");
+                return;
+            }
 
-    // Tile across canvas
-    var tw = cfg.tileWidthPx;
-    var th = cfg.tileWidthPx;
-    var cols = Math.ceil(w / tw) + 2;
-    var rows = Math.ceil(h / th) + 2;
-    var startX = -cols * tw / 2;
-    var startY = -rows * th / 2;
+            const compileShader = (type, source) => {
+                const shader = gl.createShader(type);
+                gl.shaderSource(shader, source);
+                gl.compileShader(shader);
+                if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                    console.error("Shader Compile Error:", gl.getShaderInfoLog(shader));
+                    gl.deleteShader(shader);
+                    return null;
+                }
+                return shader;
+            };
 
-    // envelope factor
-    var t = (performance.now() / 1000) - st.t0;
-    var env = computeEnvelope(cfg, t);
+            const vs = compileShader(gl.VERTEX_SHADER, vertexShaderSource);
+            const fs = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
 
-    ctx.globalAlpha = Math.min(1.0, env);
+            const program = gl.createProgram();
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
+            gl.linkProgram(program);
 
-    for (var iy = 0; iy < rows; iy++) {
-      for (var ix = 0; ix < cols; ix++) {
-        var x = startX + ix * tw;
-        var y = startY + iy * th;
-        ctx.drawImage(tileCanvas, x, y, tw, th);
-      }
-    }
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                console.error("Program Link Error:", gl.getProgramInfoLog(program));
+                return;
+            }
 
-    ctx.restore();
+            const positionBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+                -1, -1,  1, -1, -1,  1,
+                -1,  1,  1, -1,  1,  1
+            ]), gl.STATIC_DRAW);
 
-    // annulus mask: central blank and outer fade
-    ctx.save();
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.beginPath();
-    ctx.arc(cx, cy, cfg.RpxInner, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
+            const positionLocation = gl.getAttribLocation(program, "a_position");
+            gl.enableVertexAttribArray(positionLocation);
+            gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-    // optional soft outer edge (fade)
-    var grd = ctx.createRadialGradient(cx, cy, cfg.RpxOuter * 0.9, cx, cy, cfg.RpxOuter * 1.1);
-    grd.addColorStop(0, "rgba(0,0,0,0)");
-    grd.addColorStop(1, "rgba(0,0,0,1)");
-    ctx.fillStyle = grd;
-    ctx.beginPath();
-    ctx.arc(cx, cy, cfg.RpxOuter * 1.1, 0, Math.PI * 2);
-    ctx.fill();
+            const locations = {
+                resolution: gl.getUniformLocation(program, "u_resolution"),
+                phase0: gl.getUniformLocation(program, "u_phase0"),
+                phaseFast: gl.getUniformLocation(program, "u_phaseFast"),
+                shapeA: gl.getUniformLocation(program, "u_shapeA"),
+                shapeB: gl.getUniformLocation(program, "u_shapeB"),
+                blend: gl.getUniformLocation(program, "u_blend"),
+                k: gl.getUniformLocation(program, "u_k"),
+                modDepth: gl.getUniformLocation(program, "u_modDepth"),
+                mode: gl.getUniformLocation(program, "u_mode"),
+            };
 
-    // central fixation marker
-    ctx.strokeStyle = "rgba(255,255,255,0.4)";
-    ctx.beginPath();
-    ctx.arc(cx, cy, cfg.RpxInner * 0.15, 0, Math.PI * 2);
-    ctx.stroke();
-  }
+            // Resize Observer
+            const resizeObserver = new ResizeObserver(() => {
+                const displayWidth = canvas.clientWidth;
+                const displayHeight = canvas.clientHeight;
+                if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+                    canvas.width = displayWidth;
+                    canvas.height = displayHeight;
+                    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+                }
+            });
+            resizeObserver.observe(canvas);
 
-  function loop() {
-    if (!running || !config || !state) return;
+            // Diagnostics DOM Elements
+            const dFps = document.getElementById('diagFps');
+            const dFr = document.getElementById('diagFr');
+            const dLocked = document.getElementById('diagLockedFreq');
+            const dJitter = document.getElementById('diagJitter');
+            const wNyquist = document.getElementById('nyquistWarning');
+            const wJitter = document.getElementById('jitterWarning');
 
-    var now = performance.now() / 1000;
-    var dt = now - state.lastTime;
-    state.lastTime = now;
+            function render(now) {
+                // -- Performance Tracking --
+                const dt = now - time.lastTime;
+                time.lastTime = now;
+                
+                time.frameTimes[time.frameIdx] = dt;
+                time.frameIdx = (time.frameIdx + 1) % time.frameTimes.length;
+                
+                let sumDt = 0;
+                for (let i=0; i<time.frameTimes.length; i++) sumDt += time.frameTimes[i];
+                const meanDt = sumDt / time.frameTimes.length;
+                
+                let variance = 0;
+                for (let i=0; i<time.frameTimes.length; i++) {
+                    variance += Math.pow(time.frameTimes[i] - meanDt, 2);
+                }
+                const jitter = Math.sqrt(variance / time.frameTimes.length);
+                const currentFps = 1000 / meanDt;
 
-    state.angleDeg += config.degPerFrame;
+                const standardRates = [60, 72, 75, 90, 120, 144, 165, 240];
+                const Fr = standardRates.reduce((prev, curr) => 
+                    Math.abs(curr - currentFps) < Math.abs(prev - currentFps) ? curr : prev
+                );
 
-    renderFrame(config, state);
+                // -- Phase Locking Math --
+                const { m, N, fLocked } = lockFrequency(state.targetFreq, Fr);
+                const deltaTheta = 2 * Math.PI * (m / N);
+                time.phase0 = (time.phase0 + deltaTheta) % (2 * Math.PI);
+                const phaseFast = (state.nestedRatio * time.phase0) % (2 * Math.PI);
 
-    var elapsedMin = (now - state.t0) / 60;
-    if (elapsedMin >= config.sessMin) {
-      running = false;
-      return;
-    }
-    requestAnimationFrame(loop);
-  }
+                // -- Parameter Smoothing --
+                const alpha = 0.1;
+                state.smooth.modDepth += (state.modDepth - state.smooth.modDepth) * alpha;
+                state.smooth.spatialFreq += (state.spatialFreq - state.smooth.spatialFreq) * alpha;
+                state.smooth.shapeBlend += (state.shapeBlend - state.smooth.shapeBlend) * alpha;
 
-  document.getElementById('startBtn').onclick = function() {
-    config = readConfig();
-    tileCanvas = makeTile(config.tileWidthPx);
-    state = initState(config);
-    state.lastTime = performance.now() / 1000;
-    running = true;
-    requestAnimationFrame(loop);
-  };
+                // -- Rendering --
+                gl.useProgram(program);
+                gl.uniform2f(locations.resolution, gl.canvas.width, gl.canvas.height);
+                gl.uniform1f(locations.phase0, time.phase0);
+                gl.uniform1f(locations.phaseFast, phaseFast);
+                gl.uniform1i(locations.shapeA, state.shapeA);
+                gl.uniform1i(locations.shapeB, state.shapeB);
+                gl.uniform1f(locations.blend, state.smooth.shapeBlend);
+                gl.uniform1f(locations.k, state.smooth.spatialFreq);
+                gl.uniform1f(locations.modDepth, state.smooth.modDepth);
+                gl.uniform1i(locations.mode, state.mode);
 
-  document.getElementById('stopBtn').onclick = function() {
-    running = false;
-  };
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-  window.addEventListener('resize', function() {
-    if (running) {
-      config = readConfig();
-    } else {
-      var cfgTmp = readConfig();
-    }
-  });
-})();
-</script>
+                // -- Diagnostics UI Update (Throttled) --
+                if (now - time.lastDiagTime > DIAGNOSTICS_UPDATE_MS) {
+                    const nyquist = Fr / 2;
+                    dFps.textContent = currentFps.toFixed(1);
+                    dFps.className = currentFps < 55 ? "text-red-400" : "text-green-400";
+                    dFr.textContent = Fr + " Hz";
+                    dLocked.textContent = fLocked.toFixed(3) + " Hz";
+                    dJitter.textContent = jitter.toFixed(2) + " ms";
+                    dJitter.className = jitter > 2.5 ? "text-red-400" : "text-neutral-300";
 
+                    const isNyquistViolated = fLocked > nyquist;
+                    const isJitterHigh = jitter > 2.5;
+
+                    wNyquist.style.display = isNyquistViolated ? 'block' : 'none';
+                    wJitter.style.display = (isJitterHigh && !isNyquistViolated) ? 'block' : 'none';
+
+                    time.lastDiagTime = now;
+                }
+
+                requestAnimationFrame(render);
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        // Initialize
+        window.onload = () => {
+            bindUI();
+            initWebGL();
+        };
+    </script>
 </body>
 </html>
