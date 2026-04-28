@@ -1,1323 +1,368 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Pulse Fractal Entrainer</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #05070b;
-      --panel: rgba(7, 10, 16, 0.78);
-      --panel-border: rgba(166, 226, 255, 0.12);
-      --text: #eef6ff;
-      --muted: rgba(238, 246, 255, 0.66);
-      --subtle: rgba(238, 246, 255, 0.12);
-      --accent: #7fe7d5;
-      --accent-2: #ffd46b;
-      --warn: #ffbc6b;
-      --danger: #ff6b8b;
-      --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
-      --radius: 22px;
-    }
-
-    * { box-sizing: border-box; }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(127, 231, 213, 0.08), transparent 24%),
-        radial-gradient(circle at 80% 15%, rgba(255, 212, 107, 0.07), transparent 20%),
-        radial-gradient(circle at 50% 80%, rgba(107, 179, 255, 0.08), transparent 26%),
-        linear-gradient(180deg, #04060a 0%, #05070b 35%, #060b12 100%);
-      overflow: hidden;
-      overscroll-behavior: none;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-      background-size: 36px 36px;
-      mask-image: radial-gradient(circle at center, black 52%, transparent 92%);
-      opacity: 0.25;
-    }
-
-    canvas {
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    .ui {
-      position: fixed;
-      left: 18px;
-      top: 18px;
-      width: min(440px, calc(100vw - 36px));
-      max-height: calc(100vh - 36px);
-      overflow: auto;
-      padding: 18px;
-      border-radius: var(--radius);
-      border: 1px solid var(--panel-border);
-      background: linear-gradient(180deg, rgba(11, 15, 24, 0.88), rgba(7, 10, 16, 0.76));
-      backdrop-filter: blur(20px) saturate(1.2);
-      box-shadow: var(--shadow);
-    }
-
-    .ui::-webkit-scrollbar {
-      width: 10px;
-    }
-    .ui::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.12);
-      border-radius: 999px;
-      border: 2px solid transparent;
-      background-clip: content-box;
-    }
-
-    .title-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      margin-bottom: 14px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 1.08rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-    }
-
-    .eyebrow {
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 0.78rem;
-      line-height: 1.45;
-      max-width: 28ch;
-    }
-
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(127, 231, 213, 0.18);
-      background: rgba(127, 231, 213, 0.06);
-      color: var(--accent);
-      font-size: 0.77rem;
-      white-space: nowrap;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .shape-row {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .shape-arrow {
-      color: var(--muted);
-      font-size: 0.8rem;
-      text-align: center;
-    }
-
-    .panel {
-      margin-top: 14px;
-      padding: 14px;
-      border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 18px;
-      background: rgba(255,255,255,0.03);
-    }
-
-    .panel h2 {
-      margin: 0 0 10px;
-      font-size: 0.78rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 6px;
-      font-size: 0.78rem;
-      color: var(--muted);
-    }
-
-    .value {
-      color: var(--text);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .slider {
-      width: 100%;
-      accent-color: var(--accent);
-      margin: 0 0 14px;
-    }
-
-    .select, .button {
-      width: 100%;
-      min-height: 40px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(3, 7, 12, 0.68);
-      color: var(--text);
-      outline: none;
-    }
-
-    .select {
-      padding: 0 12px;
-      appearance: none;
-    }
-
-    .button {
-      padding: 0 14px;
-      font-weight: 650;
-      letter-spacing: 0.04em;
-      cursor: pointer;
-      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, color 160ms ease;
-    }
-
-    .button:hover {
-      transform: translateY(-1px);
-      border-color: rgba(127, 231, 213, 0.3);
-    }
-
-    .button.primary {
-      background: linear-gradient(180deg, rgba(127,231,213,0.9), rgba(114, 213, 255, 0.75));
-      color: #031014;
-      border-color: transparent;
-    }
-
-    .button.secondary {
-      background: rgba(255,255,255,0.05);
-    }
-
-    .button-group {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-
-    .presets {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-
-    .presets .button {
-      min-height: 36px;
-      font-size: 0.73rem;
-    }
-
-    .status {
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      width: min(340px, calc(100vw - 36px));
-      padding: 16px;
-      border-radius: var(--radius);
-      border: 1px solid var(--panel-border);
-      background: linear-gradient(180deg, rgba(11, 15, 24, 0.82), rgba(7, 10, 16, 0.72));
-      backdrop-filter: blur(18px) saturate(1.2);
-      box-shadow: var(--shadow);
-      color: var(--muted);
-      font-size: 0.8rem;
-      line-height: 1.45;
-    }
-
-    .status-grid {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px 12px;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .status strong {
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .warning {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 188, 107, 0.22);
-      background: rgba(255, 188, 107, 0.08);
-      color: #ffe7bf;
-      display: none;
-    }
-
-    .danger {
-      border-color: rgba(255, 107, 139, 0.24);
-      background: rgba(255, 107, 139, 0.09);
-      color: #ffd6df;
-    }
-
-    .tiny {
-      font-size: 0.72rem;
-      color: rgba(238, 246, 255, 0.52);
-    }
-
-    .floating-controls {
-      position: fixed;
-      right: calc(12px + env(safe-area-inset-right) * 0.35);
-      top: calc(12px + env(safe-area-inset-top) * 0.35);
-      z-index: 20;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 8px;
-      pointer-events: none;
-    }
-
-    .floating-action {
-      position: static;
-      width: auto;
-      min-width: 152px;
-      padding: 0 16px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(16px) saturate(1.15);
-      pointer-events: auto;
-    }
-
-    .floating-action[hidden] {
-      display: none;
-    }
-
-    body.is-native-fullscreen .ui,
-    body.fullscreen-fallback .ui {
-      left: 12px;
-      top: 12px;
-      width: min(420px, calc(100vw - 24px));
-      max-height: calc(100vh - 210px);
-      padding-top: calc(18px + env(safe-area-inset-top) * 0.2);
-    }
-
-    body.is-native-fullscreen .status,
-    body.fullscreen-fallback .status {
-      right: 12px;
-      bottom: 12px;
-      width: min(340px, calc(100vw - 24px));
-      padding-bottom: calc(16px + env(safe-area-inset-bottom) * 0.35);
-    }
-
-    body.ui-hidden .ui,
-    body.ui-hidden .status {
-      display: none;
-    }
-
-    @media (orientation: landscape) {
-      body.is-native-fullscreen .ui,
-      body.fullscreen-fallback .ui {
-        max-height: calc(100vh - 24px);
-      }
-    }
-
-    @media (max-width: 900px) {
-      .ui {
-        width: calc(100vw - 24px);
-        left: 12px;
-        top: 12px;
-        max-height: calc(100vh - 260px);
-      }
-      .status {
-        right: 12px;
-        bottom: 12px;
-        width: calc(100vw - 24px);
-      }
-      .presets {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 560px) {
-      .title-row {
-        flex-direction: column;
-      }
-      .grid {
-        grid-template-columns: 1fr;
-      }
-      .button-group {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invariance Engine: Conformal Shadow Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #050505; color: white; font-family: 'Courier New', Courier, monospace; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        .glass-panel {
+            background: rgba(15, 15, 20, 0.75);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        /* Custom scrollbar for raw data */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+    </style>
 </head>
 <body>
-  <canvas id="gl"></canvas>
-  <div class="floating-controls" aria-label="overlay controls">
-    <button class="button secondary floating-action" id="floatingShowUi" type="button" hidden>Show UI</button>
-    <button class="button secondary floating-action" id="floatingFullscreenExit" type="button" hidden>Exit Fullscreen</button>
-  </div>
 
-  <section class="ui" id="controlPanel" aria-label="entrainment controls">
-    <div class="title-row">
-      <div>
-        <h1>Pulse Fractal Entrainer</h1>
-        <div class="eyebrow">
-          Nested pulses, phase coherence, and fractal structure reveal designed for a phone or laptop screen.
-        </div>
-      </div>
-      <div class="chip" id="engineState">LIVE SYNTHESIS</div>
-    </div>
+    <!-- Main Canvas -->
+    <canvas id="simulationCanvas"></canvas>
 
-    <div class="panel">
-      <h2>Core Rhythm</h2>
-
-      <div class="row">
-        <span>Entrainment Rate</span>
-        <span class="value"><span id="rateLabel">7.20</span> Hz</span>
-      </div>
-      <input class="slider" id="rate" type="range" min="0.5" max="12" step="0.01" value="7.2">
-
-      <div class="row">
-        <span>Nested Pulses</span>
-        <span class="value"><span id="layersLabel">7</span></span>
-      </div>
-      <input class="slider" id="layers" type="range" min="1" max="10" step="1" value="7">
-
-      <div class="row">
-        <span>Pulse Spread</span>
-        <span class="value"><span id="spreadLabel">0.72</span></span>
-      </div>
-      <input class="slider" id="spread" type="range" min="0.1" max="1.6" step="0.01" value="0.72">
-
-      <div class="row">
-        <span>Coherence</span>
-        <span class="value"><span id="coherenceLabel">0.78</span></span>
-      </div>
-      <input class="slider" id="coherence" type="range" min="0" max="1" step="0.01" value="0.78">
-    </div>
-
-    <div class="panel">
-      <h2>Geometry</h2>
-      <div class="grid">
+    <!-- Overlay UI -->
+    <div class="absolute top-4 left-4 glass-panel p-5 rounded-xl w-80 z-10 flex flex-col gap-4">
         <div>
-          <div class="row">
-            <span>Symmetry</span>
-            <span class="value"><span id="symmetryLabel">10</span>-fold</span>
-          </div>
-          <input class="slider" id="symmetry" type="range" min="3" max="18" step="1" value="10">
+            <h1 class="text-xl font-bold text-cyan-400 tracking-wider mb-1">INVARIANCE ENGINE</h1>
+            <p class="text-xs text-gray-400">Photon-Dense Conformal Flow</p>
         </div>
-        <div>
-          <div class="row">
-            <span>Fractal Depth</span>
-            <span class="value"><span id="fractalLabel">0.80</span></span>
-          </div>
-          <input class="slider" id="fractal" type="range" min="0" max="1.5" step="0.01" value="0.8">
+
+        <div class="grid grid-cols-2 gap-2 text-sm border-y border-gray-700 py-3">
+            <div class="text-gray-400">Step (t)</div>
+            <div id="stat-t" class="text-right text-white font-bold">0</div>
+            
+            <div class="text-gray-400">Scale (S)</div>
+            <div id="stat-s" class="text-right text-yellow-400 font-bold">1.00e+0</div>
+            
+            <div class="text-gray-400">Pressure (P)</div>
+            <div id="stat-p" class="text-right text-red-400 font-bold">0.00e+0</div>
+            
+            <div class="text-gray-400">Memory Carves</div>
+            <div id="stat-mem" class="text-right text-cyan-400 font-bold">0</div>
         </div>
-      </div>
 
-      <div class="grid">
-        <div>
-          <div class="row">
-            <span>Bloom</span>
-            <span class="value"><span id="bloomLabel">1.10</span></span>
-          </div>
-          <input class="slider" id="bloom" type="range" min="0" max="2.5" step="0.01" value="1.1">
+        <div class="flex flex-col gap-2">
+            <label class="text-xs text-gray-400 flex justify-between">
+                <span>Simulation Speed</span>
+                <span id="speed-val">50 steps/frame</span>
+            </label>
+            <input type="range" id="speed-slider" min="1" max="1000" value="50" class="w-full accent-cyan-400 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer">
         </div>
-        <div>
-          <div class="row">
-            <span>Rotation</span>
-            <span class="value"><span id="rotationLabel">0.20</span></span>
-          </div>
-          <input class="slider" id="rotation" type="range" min="-1" max="1" step="0.01" value="0.2">
+
+        <div class="flex gap-2 mt-2">
+            <button id="btn-play" class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white py-2 rounded font-bold transition-colors">Pause</button>
+            <button id="btn-step" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded font-bold transition-colors">+100 Steps</button>
         </div>
-      </div>
+        <button id="btn-reset" class="w-full border border-red-500/50 text-red-400 hover:bg-red-500/20 py-2 rounded font-bold transition-colors mt-1">Reset Reality</button>
 
-      <div class="row">
-        <span>Structure Reveal</span>
-        <span class="value"><span id="structureLabel">0.36</span></span>
-      </div>
-      <input class="slider" id="structure" type="range" min="0" max="1" step="0.01" value="0.36">
     </div>
 
-    <div class="panel">
-      <h2>Shape Field</h2>
-      <div class="shape-row">
-        <select class="select" id="shapeA">
-          <option value="0">CIRCLE</option>
-          <option value="1">TRIANGLE</option>
-          <option value="2">HEXAGON</option>
-          <option value="3">FRACTAL</option>
-          <option value="4">NOISE_RADIAL</option>
-        </select>
-        <span class="shape-arrow">-&gt;</span>
-        <select class="select" id="shapeB">
-          <option value="0">CIRCLE</option>
-          <option value="1">TRIANGLE</option>
-          <option value="2" selected>HEXAGON</option>
-          <option value="3">FRACTAL</option>
-          <option value="4">NOISE_RADIAL</option>
-        </select>
-      </div>
-
-      <div class="row" style="margin-top:12px;">
-        <span>Morph</span>
-        <span class="value" id="shapeBlendLabel">0%</span>
-      </div>
-      <input class="slider" id="shapeBlend" type="range" min="0" max="1" step="0.01" value="0">
+    <!-- Right Side Log -->
+    <div class="absolute bottom-4 right-4 glass-panel p-4 rounded-xl w-72 h-64 flex flex-col z-10 pointer-events-none">
+        <h2 class="text-sm font-bold text-gray-300 border-b border-gray-700 pb-2 mb-2">Differential Events</h2>
+        <div id="event-log" class="flex-1 overflow-y-auto text-xs font-mono space-y-1 text-gray-400 flex flex-col-reverse">
+            <!-- Logs spawn here -->
+        </div>
     </div>
 
-    <div class="panel">
-      <h2>Presets</h2>
-      <div class="presets">
-        <button class="button secondary" data-preset="focus">Focus</button>
-        <button class="button secondary" data-preset="flow">Flow</button>
-        <button class="button secondary" data-preset="deep">Deep</button>
-        <button class="button secondary" data-preset="dream">Dream</button>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Playback</h2>
-      <div class="button-group">
-        <button class="button primary" id="togglePlay">Pause</button>
-        <button class="button secondary" id="recenter">Recenter</button>
-        <button class="button secondary" id="toggleFullscreen">Fullscreen</button>
-        <button class="button secondary" id="toggleUi">Hide UI</button>
-      </div>
-      <div class="tiny" style="margin-top:10px;">
-        Visual only. For users sensitive to flashing or motion, keep brightness low and prefer slower rates. On mobile, the fullscreen button falls back to an immersive view when the browser keeps its own chrome, and `Hide UI` leaves a small return control onscreen.
-      </div>
-    </div>
-  </section>
-
-  <aside class="status" id="statusPanel" aria-label="diagnostics">
-    <div class="status-grid">
-      <span>FPS</span><strong id="fps">0.0</strong>
-      <span>Frame jitter</span><strong id="jitter">0.00 ms</strong>
-      <span>Beat phase</span><strong id="phase">0.000</strong>
-      <span>Pulse energy</span><strong id="energy">0.00</strong>
-      <span>Coherence lock</span><strong id="coherenceState">78%</strong>
-      <span>Structure signal</span><strong id="structureState">0.36</strong>
-      <span>Display mode</span><strong id="displayState">WINDOWED</strong>
-      <span>Canvas</span><strong id="canvasSize">0 x 0</strong>
-    </div>
-    <div class="warning" id="warning"></div>
-  </aside>
-
-  <script>
-    const canvas = document.getElementById('gl');
-    const gl = canvas.getContext('webgl2', { antialias: false, alpha: false, powerPreference: 'high-performance' });
-
-    const state = {
-      running: true,
-      rate: 7.2,
-      layers: 7,
-      spread: 0.72,
-      coherence: 0.78,
-      symmetry: 10,
-      fractal: 0.8,
-      bloom: 1.1,
-      rotation: 0.2,
-      structure: 0.36,
-      shapeA: 0,
-      shapeB: 2,
-      shapeBlend: 0,
-      focusX: 0.5,
-      focusY: 0.5,
-      pointerActive: false,
-      mode: 'focus',
-      fullscreenMode: 'windowed',
-      uiHidden: false
-    };
-
-    const runtime = {
-      lastNow: performance.now(),
-      samples: Array.from({ length: 48 }, () => 1000 / 60),
-      idx: 0,
-      phase: 0,
-      phaseJitter: 0,
-      canvasWidth: 0,
-      canvasHeight: 0
-    };
-
-    const dom = {
-      rate: document.getElementById('rate'),
-      layers: document.getElementById('layers'),
-      spread: document.getElementById('spread'),
-      coherence: document.getElementById('coherence'),
-      symmetry: document.getElementById('symmetry'),
-      fractal: document.getElementById('fractal'),
-      bloom: document.getElementById('bloom'),
-      rotation: document.getElementById('rotation'),
-      structure: document.getElementById('structure'),
-      shapeA: document.getElementById('shapeA'),
-      shapeB: document.getElementById('shapeB'),
-      shapeBlend: document.getElementById('shapeBlend'),
-      shapeBlendLabel: document.getElementById('shapeBlendLabel'),
-      rateLabel: document.getElementById('rateLabel'),
-      layersLabel: document.getElementById('layersLabel'),
-      spreadLabel: document.getElementById('spreadLabel'),
-      coherenceLabel: document.getElementById('coherenceLabel'),
-      symmetryLabel: document.getElementById('symmetryLabel'),
-      fractalLabel: document.getElementById('fractalLabel'),
-      bloomLabel: document.getElementById('bloomLabel'),
-      rotationLabel: document.getElementById('rotationLabel'),
-      structureLabel: document.getElementById('structureLabel'),
-      fps: document.getElementById('fps'),
-      jitter: document.getElementById('jitter'),
-      phase: document.getElementById('phase'),
-      energy: document.getElementById('energy'),
-      coherenceState: document.getElementById('coherenceState'),
-      structureState: document.getElementById('structureState'),
-      displayState: document.getElementById('displayState'),
-      canvasSize: document.getElementById('canvasSize'),
-      warning: document.getElementById('warning'),
-      controlPanel: document.getElementById('controlPanel'),
-      statusPanel: document.getElementById('statusPanel'),
-      togglePlay: document.getElementById('togglePlay'),
-      recenter: document.getElementById('recenter'),
-      toggleFullscreen: document.getElementById('toggleFullscreen'),
-      toggleUi: document.getElementById('toggleUi'),
-      floatingShowUi: document.getElementById('floatingShowUi'),
-      floatingFullscreenExit: document.getElementById('floatingFullscreenExit'),
-      engineState: document.getElementById('engineState')
-    };
-
-    const vertexSource = `#version 300 es
-      in vec2 a_position;
-      out vec2 v_uv;
-      void main() {
-        v_uv = a_position * 0.5 + 0.5;
-        gl_Position = vec4(a_position, 0.0, 1.0);
-      }
-    `;
-
-    const fragmentSource = `#version 300 es
-      precision highp float;
-
-      in vec2 v_uv;
-      out vec4 outColor;
-
-      uniform vec2 u_resolution;
-      uniform float u_time;
-      uniform float u_rate;
-      uniform float u_layers;
-      uniform float u_spread;
-      uniform float u_coherence;
-      uniform float u_symmetry;
-      uniform float u_fractal;
-      uniform float u_bloom;
-      uniform float u_rotation;
-      uniform float u_structure;
-      uniform float u_energy;
-      uniform int u_shapeA;
-      uniform int u_shapeB;
-      uniform float u_blend;
-      uniform vec2 u_focus;
-      uniform int u_mode;
-
-      float hash(vec2 p) {
-        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
-      }
-
-      float noise(vec2 p) {
-        vec2 i = floor(p);
-        vec2 f = fract(p);
-        vec2 u = f * f * (3.0 - 2.0 * f);
-        return mix(
-          mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), u.x),
-          mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x),
-          u.y
-        );
-      }
-
-      float fbm(vec2 p) {
-        float value = 0.0;
-        float amp = 0.5;
-        for (int i = 0; i < 5; i++) {
-          value += amp * noise(p);
-          p *= 2.02;
-          amp *= 0.5;
-        }
-        return value;
-      }
-
-      float sdCircle(vec2 p) {
-        return length(p);
-      }
-
-      float sdEqTriangle(vec2 p, float r) {
-        const float k = 1.7320508075688772;
-        p.x = abs(p.x) - r;
-        p.y = p.y + r / k;
-        if (p.x + k * p.y > 0.0) {
-          p = vec2(p.x - k * p.y, -k * p.x - p.y) / 2.0;
-        }
-        p.x -= clamp(p.x, -2.0 * r, 0.0);
-        return -length(p) * sign(p.y);
-      }
-
-      float sdHexagon(vec2 p, float r) {
-        const vec3 k = vec3(-0.866025404, 0.5, 0.577350269);
-        p = abs(p);
-        p -= 2.0 * min(dot(k.xy, p), 0.0) * k.xy;
-        p -= vec2(clamp(p.x, -k.z * r, k.z * r), r);
-        return length(p) * sign(p.y);
-      }
-
-      float sdFractalTri(vec2 p) {
-        float s = 1.0;
-        vec2 n = normalize(vec2(1.0, 1.73205081));
-        for (int i = 0; i < 4; i++) {
-          p = abs(p) - vec2(0.5, 0.288) / s;
-          float d = dot(p, n);
-          p -= 2.0 * min(0.0, d) * n;
-          s *= 1.5;
-        }
-        return length(p) / s;
-      }
-
-      float sdNoiseRadial(vec2 p) {
-        float r = length(p);
-        return r + noise(p * 4.0) * 0.2;
-      }
-
-      float getShape(int mode, vec2 p) {
-        switch (mode) {
-          case 0: return sdCircle(p);
-          case 1: return sdEqTriangle(p, 0.8);
-          case 2: return sdHexagon(p, 0.8);
-          case 3: return sdFractalTri(p);
-          case 4: return sdNoiseRadial(p);
-          default: return sdCircle(p);
-        }
-      }
-
-      mat2 rot(float a) {
-        float s = sin(a);
-        float c = cos(a);
-        return mat2(c, -s, s, c);
-      }
-
-      vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
-        return a + b * cos(6.28318 * (c * t + d));
-      }
-
-      float ringPulse(float x, float width) {
-        float y = abs(fract(x) - 0.5);
-        return exp(-pow(y * 2.0 / max(width, 0.0001), 2.0));
-      }
-
-      float orbitStructure(vec2 p, float time, float coherence) {
-        vec2 z = p;
-        vec2 c = rot(time * 0.08) * p * 0.42 + vec2(-0.58 + 0.08 * sin(time * 0.13), 0.16 * cos(time * 0.11));
-        float trap = 10.0;
-        float energy = 0.0;
-        for (int i = 0; i < 7; i++) {
-          z = vec2(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y) + c;
-          float radius2 = dot(z, z);
-          trap = min(trap, abs(z.x) + abs(z.y));
-          energy += exp(-radius2 * 0.28) * (0.9 - float(i) * 0.08);
-          z = mix(z, abs(z), coherence * 0.1);
-        }
-        return exp(-trap * 3.6) + energy * 0.11;
-      }
-
-      void main() {
-        vec2 uv = v_uv;
-        vec2 p = uv * 2.0 - 1.0;
-        p.x *= u_resolution.x / u_resolution.y;
-        p = rot(u_rotation * 0.6) * p;
-
-        vec2 focus = (u_focus * 2.0 - 1.0);
-        focus.x *= u_resolution.x / u_resolution.y;
-        float focusDist = length(p - focus);
-        float radial = length(p);
-        float angle = atan(p.y, p.x);
-        float time = u_time;
-        float beat = 0.5 + 0.5 * sin(time * u_rate * 6.28318);
-        float drive = smoothstep(0.08, 0.92, beat);
-        float coherence = smoothstep(0.0, 1.0, u_coherence);
-
-        float mandala = 0.5 + 0.5 * cos(angle * u_symmetry + time * (0.6 + u_rotation * 0.15));
-        float drift = fbm(p * 2.8 + vec2(time * 0.07, -time * 0.05));
-        float detail = fbm(p * 7.5 + vec2(-time * 0.11, time * 0.09));
-        vec2 shapeP = p * (1.08 + u_spread * 0.55);
-        float shapeA = getShape(u_shapeA, shapeP);
-        float shapeB = getShape(u_shapeB, shapeP);
-        float shapeMix = mix(shapeA, shapeB, u_blend);
-        float shapeMask = 1.0 - smoothstep(0.0, 0.18 + u_fractal * 0.05, abs(shapeMix));
-        float shapeGlow = exp(-abs(shapeMix) * (4.6 + u_fractal * 2.0));
-
-        float pulseField = 0.0;
-        float echoField = 0.0;
-        float microField = 0.0;
-        float layerCount = max(u_layers, 1.0);
-        for (int i = 0; i < 10; i++) {
-          float fi = float(i);
-          if (fi >= layerCount) break;
-
-          float layer = fi / max(layerCount - 1.0, 1.0);
-          float harmonicStep = floor(layer * 4.0 + 0.5) / 4.0;
-          float speed = mix(0.8 + layer * 0.9, 0.86 + harmonicStep * 2.1, coherence);
-          float detune = (noise(vec2(fi * 2.31, time * 0.09 + layer * 3.1)) - 0.5) * (1.0 - coherence) * 0.28;
-          float radius = radial * (8.0 + fi * mix(u_spread * 2.9, u_spread * 2.2, coherence));
-          float phase = radius - time * u_rate * speed;
-          float ring = ringPulse(phase - detune, mix(0.17 + layer * 0.035, 0.12 + layer * 0.026, coherence));
-          float spiralFreq = mix(2.0 + fi * 0.55, u_symmetry * (0.24 + layer * 0.09), coherence);
-          float spiral = 0.5 + 0.5 * cos(angle * spiralFreq + time * (0.55 + speed * 0.34));
-          float nested = mix(1.0, spiral, 0.5 + coherence * 0.22) * mix(0.65, 1.0, mandala);
-          pulseField += ring * nested / (1.0 + fi * 0.7);
-
-          float echoPhase = radial * (11.0 + fi * 1.65) - time * u_rate * (speed * 1.48 + 0.22);
-          float echoSpiral = 0.5 + 0.5 * cos(angle * (spiralFreq * 0.72 + 1.4) - time * (0.28 + layer * 0.24));
-          echoField += ringPulse(echoPhase, 0.22 + layer * 0.04) * echoSpiral / (1.6 + fi);
-
-          float microPhase = radial * (17.5 + fi * 2.35) - time * u_rate * (speed * 2.18 + 0.46);
-          float filament = 0.5 + 0.5 * cos(angle * (u_symmetry + 2.0 + fi * 0.34) + time * (0.78 + layer));
-          microField += ringPulse(microPhase, 0.10 + layer * 0.02) * filament / (2.4 + fi * 0.55);
+    <script>
+        // --- Core Math: Complex Numbers ---
+        class Complex {
+            constructor(re, im) { this.re = re; this.im = im; }
+            add(c) { return new Complex(this.re + c.re, this.im + c.im); }
+            sub(c) { return new Complex(this.re - c.re, this.im - c.im); }
+            mul(c) { return new Complex(this.re * c.re - this.im * c.im, this.re * c.im + this.im * c.re); }
+            scale(s) { return new Complex(this.re * s, this.im * s); }
+            abs() { return Math.hypot(this.re, this.im); }
+            phase() { return Math.atan2(this.im, this.re); }
         }
 
-        pulseField += echoField * (0.16 + coherence * 0.24);
-        pulseField += microField * (0.10 + u_fractal * 0.08);
+        // --- The Invariance Engine (Photon Analog ported to JS) ---
+        class Invariance {
+            constructor(z_re = 1.0, z_im = 1.0) {
+                this.z = new Complex(z_re, z_im);
+                // KICKSTART: Introduce the initial proto-tension. 
+                // Form emerges from formless, delta cannot be 0!
+                this._z = new Complex(z_re - 0.1, z_im - 0.1); 
+                this.S = 1.0;
+                this.P = 0.0;
+                this.t = 0;
+                this._w = this._wmap(this.z);
+                this.mem = []; // Flat array [w.real, w.imag, info...]
+            }
 
-        float core = exp(-radial * 3.4);
-        float structureField = orbitStructure(
-          rot(mandala * 0.35) * p * (1.15 + u_structure * 1.1) + vec2(drift - 0.5, detail - 0.5) * u_structure * 0.35,
-          time,
-          coherence
-        );
-        float reveal = smoothstep(0.22, 0.92, structureField + pulseField * 0.18 + shapeGlow * 0.08) * u_structure;
-        float aura = (core * 1.2 + pulseField * 1.15 + drive * 0.5 + reveal * 0.42) * u_bloom;
-        float fractalVein = pow(max(detail + structureField * u_structure * 0.28, 0.0), 1.3) * u_fractal;
-        float fiber = smoothstep(0.15, 1.0, fractalVein + drift * 0.3 + structureField * u_structure * 0.16);
+            _wmap(z) {
+                return new Complex(Math.log(z.abs() + 1e-15), z.phase());
+            }
 
-        vec3 cool = vec3(0.05, 0.10, 0.14);
-        vec3 teal = vec3(0.18, 0.82, 0.74);
-        vec3 blue = vec3(0.25, 0.58, 0.95);
-        vec3 gold = vec3(0.98, 0.75, 0.34);
-        vec3 rose = vec3(0.93, 0.48, 0.58);
+            step(k = 1) {
+                // 1. Differential self-reference
+                let delta = this.z.sub(this._z);
+                let r = this.z.abs() + 1e-15;
+                let dr = delta.scale(1 / r);
+                let T = dr.abs();
+                
+                // Tension -> Pressure
+                this.P = T / (1.0 - T + 1e-15);
 
-        vec3 base = palette(0.18 + drift * 0.18, cool, vec3(0.18, 0.26, 0.30), vec3(0.85, 0.75, 0.55), vec3(0.0, 0.12, 0.22));
-        vec3 accent = mix(teal, gold, smoothstep(0.2, 0.95, mandala));
-        accent = mix(accent, rose, 0.18 * fiber);
-        accent = mix(accent, blue, 0.12 * sin(time * 0.45 + angle * 1.2));
-        vec3 structureColor = mix(blue, gold, clamp(structureField * 0.85 + mandala * 0.22, 0.0, 1.0));
+                // 2. Invariant update with Conformal Curvature
+                // Pressure orthogonally warps the flow to induce the log-spiral
+                let warpAngle = this.P * 0.15; 
+                let warp = new Complex(Math.cos(warpAngle), Math.sin(warpAngle));
+                
+                let correction = dr.mul(warp).scale((1.0 - T) * r);
+                let next_z = this.z.add(correction);
 
-        vec3 color = mix(base, accent, clamp(aura, 0.0, 1.0));
-        color += teal * pulseField * 0.18;
-        color += gold * pow(drive, 4.0) * u_energy;
-        color += vec3(0.08, 0.12, 0.16) * fractalVein;
-        color += mix(teal, gold, u_blend) * (shapeGlow * 0.28 + shapeMask * 0.16);
-        color = mix(color, mix(blue, rose, u_blend), shapeMask * 0.08);
-        color += structureColor * reveal * (0.18 + coherence * 0.18);
-        color = mix(color, color + structureColor * 0.18, u_structure * 0.35);
+                // SLAM breakthrough
+                let slamTriggered = false;
+                if (T < 1e-3 / this.S) { // Trigger when tension resolves
+                    let boost = 1.5;     // Renormalization boost
+                    this.S *= boost;
+                    
+                    next_z = next_z.scale(boost); // Dimensional elevation
+                    
+                    // Lift and prune subtractive memory
+                    let new_mem = [];
+                    for (let i = 0; i < this.mem.length; i += 3) {
+                        let u = this.mem[i];
+                        let v = this.mem[i+1];
+                        let d = this.mem[i+2] / boost; // Decay the depth
+                        if (Math.abs(d) > 1e-8) {
+                            new_mem.push(u, v, d);
+                        }
+                    }
+                    this.mem = new_mem;
+                    slamTriggered = true;
+                    
+                    // Reset reference to pre-SLAM state to create massive new tension
+                    this._z = this.z;
+                } else {
+                    this._z = this.z;
+                }
 
-        float halo = exp(-focusDist * (4.5 - 1.3 * drive));
-        color += vec3(0.08, 0.22, 0.20) * halo * u_energy;
+                // 3. Emergent mem-brane carving
+                let w = this._wmap(next_z);
+                let dw = w.sub(this._w);
+                this._w = w;
 
-        float scan = 0.985 + 0.015 * sin(uv.y * u_resolution.y * 1.15 + time * 14.0);
-        float vignette = smoothstep(1.25, 0.25, radial);
-        vec3 softClamp = 1.0 - exp(-color * 1.4);
+                let align = this.t > 0 ? Math.exp(-Math.abs(dw.im / (dw.re + 1e-15))) : 1.0;
+                let info = T * (1.0 - T) * align;
 
-        if (u_mode == 1) {
-          color = mix(color, softClamp, 0.22);
-          color *= vec3(0.92, 0.95, 1.0);
+                // Threshold adapted for active visualization carving
+                if (info > 1e-5 / this.S) {
+                    this.mem.push(w.re, w.im, info);
+                }
+
+                this.z = next_z;
+                this.t += k;
+
+                return { slam: slamTriggered };
+            }
         }
 
-        color *= vignette * scan;
-        color = pow(max(color, 0.0), vec3(0.92));
-        outColor = vec4(color, 1.0);
-      }
-    `;
+        // --- Application / Rendering Logic ---
+        const canvas = document.getElementById('simulationCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // UI Elements
+        const elT = document.getElementById('stat-t');
+        const elS = document.getElementById('stat-s');
+        const elP = document.getElementById('stat-p');
+        const elMem = document.getElementById('stat-mem');
+        const logContainer = document.getElementById('event-log');
+        
+        let engine = new Invariance();
+        let isRunning = true;
+        let stepsPerFrame = 50;
+        let pathHistory = []; // For rendering the smooth trajectory
+        const MAX_PATH = 4000;
 
-    function compileShader(type, source) {
-      const shader = gl.createShader(type);
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        throw new Error(gl.getShaderInfoLog(shader) || 'Shader compile failed');
-      }
-      return shader;
-    }
-
-    function createProgram(vsSource, fsSource) {
-      const program = gl.createProgram();
-      gl.attachShader(program, compileShader(gl.VERTEX_SHADER, vsSource));
-      gl.attachShader(program, compileShader(gl.FRAGMENT_SHADER, fsSource));
-      gl.linkProgram(program);
-      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-        throw new Error(gl.getProgramInfoLog(program) || 'Program link failed');
-      }
-      return program;
-    }
-
-    if (!gl) {
-      document.body.innerHTML = '<div style="padding:24px;color:white">WebGL 2 is not available in this browser.</div>';
-    } else {
-      const program = createProgram(vertexSource, fragmentSource);
-      gl.useProgram(program);
-
-      const positions = new Float32Array([
-        -1, -1,
-         1, -1,
-        -1,  1,
-        -1,  1,
-         1, -1,
-         1,  1
-      ]);
-
-      const vao = gl.createVertexArray();
-      gl.bindVertexArray(vao);
-      const buffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
-
-      const posLoc = gl.getAttribLocation(program, 'a_position');
-      gl.enableVertexAttribArray(posLoc);
-      gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
-
-      const uniforms = {
-        resolution: gl.getUniformLocation(program, 'u_resolution'),
-        time: gl.getUniformLocation(program, 'u_time'),
-        rate: gl.getUniformLocation(program, 'u_rate'),
-        layers: gl.getUniformLocation(program, 'u_layers'),
-        spread: gl.getUniformLocation(program, 'u_spread'),
-        coherence: gl.getUniformLocation(program, 'u_coherence'),
-        symmetry: gl.getUniformLocation(program, 'u_symmetry'),
-        fractal: gl.getUniformLocation(program, 'u_fractal'),
-        bloom: gl.getUniformLocation(program, 'u_bloom'),
-        rotation: gl.getUniformLocation(program, 'u_rotation'),
-        structure: gl.getUniformLocation(program, 'u_structure'),
-        energy: gl.getUniformLocation(program, 'u_energy'),
-        shapeA: gl.getUniformLocation(program, 'u_shapeA'),
-        shapeB: gl.getUniformLocation(program, 'u_shapeB'),
-        blend: gl.getUniformLocation(program, 'u_blend'),
-        focus: gl.getUniformLocation(program, 'u_focus'),
-        mode: gl.getUniformLocation(program, 'u_mode')
-      };
-
-      function resizeCanvas() {
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const width = Math.floor(canvas.clientWidth * dpr);
-        const height = Math.floor(canvas.clientHeight * dpr);
-        if (canvas.width !== width || canvas.height !== height) {
-          canvas.width = width;
-          canvas.height = height;
-          gl.viewport(0, 0, width, height);
-          runtime.canvasWidth = width;
-          runtime.canvasHeight = height;
-          dom.canvasSize.textContent = `${width} x ${height}`;
+        function logEvent(msg, color = 'text-gray-300') {
+            const el = document.createElement('div');
+            el.className = color;
+            el.innerText = `[t=${engine.t}] ${msg}`;
+            logContainer.prepend(el);
+            if (logContainer.children.length > 30) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
         }
-      }
 
-      window.addEventListener('resize', resizeCanvas);
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', resizeCanvas);
-      }
-      const ro = new ResizeObserver(resizeCanvas);
-      ro.observe(canvas);
-      resizeCanvas();
-
-      function getFullscreenElement() {
-        return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || null;
-      }
-
-      function hasNativeFullscreenSupport() {
-        const root = document.documentElement;
-        return Boolean(root.requestFullscreen || root.webkitRequestFullscreen || root.msRequestFullscreen);
-      }
-
-      async function requestNativeFullscreen() {
-        const root = document.documentElement;
-        if (root.requestFullscreen) {
-          try {
-            await root.requestFullscreen({ navigationUI: 'hide' });
-          } catch (error) {
-            await root.requestFullscreen();
-          }
-          return;
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
         }
-        if (root.webkitRequestFullscreen) {
-          root.webkitRequestFullscreen();
-          return;
-        }
-        if (root.msRequestFullscreen) {
-          root.msRequestFullscreen();
-          return;
-        }
-        throw new Error('Fullscreen API unavailable');
-      }
-
-      async function exitNativeFullscreen() {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-          return;
-        }
-        if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-          return;
-        }
-        if (document.msExitFullscreen) {
-          document.msExitFullscreen();
-        }
-      }
-
-      async function lockOrientation() {
-        if (!screen.orientation || !screen.orientation.lock || window.innerWidth >= window.innerHeight) return;
-        try {
-          await screen.orientation.lock('landscape');
-        } catch (error) {
-          // Some browsers only allow orientation lock in installed or native fullscreen contexts.
-        }
-      }
-
-      function unlockOrientation() {
-        if (!screen.orientation || !screen.orientation.unlock) return;
-        try {
-          screen.orientation.unlock();
-        } catch (error) {
-          // Ignore unsupported unlock behavior.
-        }
-      }
-
-      function syncFloatingControls() {
-        const fullscreenActive = Boolean(getFullscreenElement()) || state.fullscreenMode === 'fallback';
-        dom.floatingShowUi.hidden = !state.uiHidden;
-        dom.floatingFullscreenExit.hidden = !fullscreenActive;
-      }
-
-      function syncUiVisibility() {
-        document.body.classList.toggle('ui-hidden', state.uiHidden);
-        dom.controlPanel.hidden = state.uiHidden;
-        dom.statusPanel.hidden = state.uiHidden;
-        dom.toggleUi.textContent = state.uiHidden ? 'Show UI' : 'Hide UI';
-        dom.toggleUi.setAttribute('aria-pressed', state.uiHidden ? 'true' : 'false');
-        dom.floatingShowUi.textContent = 'Show UI';
-        syncFloatingControls();
+        window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
-      }
 
-      function toggleUiVisibility(forceHidden) {
-        state.uiHidden = typeof forceHidden === 'boolean' ? forceHidden : !state.uiHidden;
-        syncUiVisibility();
-      }
+        function render() {
+            // Dark void background
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      function syncFullscreenUi() {
-        const nativeActive = Boolean(getFullscreenElement());
-        if (nativeActive) {
-          state.fullscreenMode = 'native';
-        } else if (state.fullscreenMode === 'native') {
-          state.fullscreenMode = 'windowed';
+            const cw = canvas.width;
+            const ch = canvas.height;
+            const cx = cw / 2;
+            const cy = ch / 2;
+
+            // Auto-calculate zoom based on maximum history bound
+            let max_r = engine.z.abs(); 
+            for(let pt of pathHistory) {
+                if (pt.abs() > max_r) max_r = pt.abs();
+            }
+            max_r *= 1.2;
+            if (max_r < 1.0) max_r = 1.0;
+            const zoom = Math.min(cw, ch) / 2 / max_r;
+
+            // --- Draw Grid/Axes ---
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, cy); ctx.lineTo(cw, cy);
+            ctx.moveTo(cx, 0); ctx.lineTo(cx, ch);
+            ctx.stroke();
+
+            // --- Draw Generative Path (The Spiral Flow) ---
+            if (pathHistory.length > 1) {
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.lineWidth = 1.5;
+                for (let i = 0; i < pathHistory.length; i++) {
+                    const pt = pathHistory[i];
+                    const px = cx + pt.re * zoom;
+                    const py = cy - pt.im * zoom;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                }
+                ctx.stroke();
+            }
+
+            // --- Draw Subtractive Memory (The Carves) ---
+            for (let i = 0; i < engine.mem.length; i += 3) {
+                let u = engine.mem[i]; // log(r)
+                let v = engine.mem[i+1]; // theta
+                let depth = engine.mem[i+2];
+
+                // Convert Conformal (log-polar) back to Cartesian to map to the Canvas
+                let r_real = Math.exp(u);
+                let z_re = r_real * Math.cos(v);
+                let z_im = r_real * Math.sin(v);
+
+                const px = cx + z_re * zoom;
+                const py = cy - z_im * zoom;
+
+                // Scale visualization size up for viewing
+                let radius = depth * 1000 * engine.S; 
+                radius = Math.max(2.5, Math.min(radius, 20)); // Clamp size
+
+                // Plasma-like color mapping based on tension depth
+                const hue = (200 + (depth * 1e5) % 160); 
+
+                ctx.beginPath();
+                ctx.arc(px, py, radius, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${hue}, 100%, 60%, 0.8)`;
+                ctx.fill();
+            }
+
+            // --- Draw Current Live State (Reality 'z') ---
+            const currentX = cx + engine.z.re * zoom;
+            const currentY = cy - engine.z.im * zoom;
+            
+            // Halo
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, 15, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
+            ctx.fill();
+
+            // Core point
+            ctx.beginPath();
+            ctx.arc(currentX, currentY, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = '#0ff';
+            ctx.fill();
+            ctx.shadowBlur = 0; // reset
         }
 
-        const fallbackActive = state.fullscreenMode === 'fallback';
-        const active = nativeActive || fallbackActive;
-        document.body.classList.toggle('is-native-fullscreen', nativeActive);
-        document.body.classList.toggle('fullscreen-fallback', fallbackActive);
-
-        dom.toggleFullscreen.textContent = active ? 'Exit Fullscreen' : 'Fullscreen';
-        dom.toggleFullscreen.setAttribute('aria-pressed', active ? 'true' : 'false');
-        dom.floatingFullscreenExit.textContent = 'Exit Fullscreen';
-        dom.displayState.textContent = nativeActive ? 'NATIVE' : fallbackActive ? 'IMMERSIVE' : 'WINDOWED';
-
-        if (!active) {
-          unlockOrientation();
-        }
-        syncFloatingControls();
-        resizeCanvas();
-      }
-
-      async function enterFullscreenMode() {
-        if (hasNativeFullscreenSupport()) {
-          try {
-            state.fullscreenMode = 'native';
-            await requestNativeFullscreen();
-            await lockOrientation();
-            syncFullscreenUi();
-            return;
-          } catch (error) {
-            state.fullscreenMode = 'windowed';
-          }
+        function updateUI() {
+            elT.innerText = engine.t.toLocaleString();
+            elS.innerText = engine.S.toExponential(2);
+            elP.innerText = engine.P.toExponential(2);
+            elMem.innerText = (engine.mem.length / 3).toLocaleString();
         }
 
-        state.fullscreenMode = 'fallback';
-        window.scrollTo(0, 0);
-        await lockOrientation();
-        syncFullscreenUi();
-      }
+        function simulationLoop() {
+            if (isRunning) {
+                let didSlam = false;
+                for (let i = 0; i < stepsPerFrame; i++) {
+                    const res = engine.step();
+                    if (res.slam) didSlam = true;
+                    
+                    // Subsample path history to save memory while looking smooth
+                    if (engine.t % 2 === 0) {
+                        pathHistory.push(new Complex(engine.z.re, engine.z.im));
+                        if (pathHistory.length > MAX_PATH) pathHistory.shift();
+                    }
+                }
+                
+                if (didSlam) logEvent("SLAM! Dimensional elevation triggered.", "text-yellow-400");
+                if (engine.t % 1000 === 0 && engine.mem.length > 0) {
+                     logEvent(`Carved topology updated. Memory depth: ${engine.mem.length/3}`);
+                }
+            }
 
-      async function exitFullscreenMode() {
-        const nativeActive = Boolean(getFullscreenElement());
-        if (nativeActive) {
-          try {
-            await exitNativeFullscreen();
-          } catch (error) {
-            // If native exit fails, we still fall back to windowed state below.
-          }
+            render();
+            updateUI();
+            requestAnimationFrame(simulationLoop);
         }
-        state.fullscreenMode = 'windowed';
-        syncFullscreenUi();
-      }
 
-      function bindRange(input, label, key, format = (v) => v) {
-        const sync = () => {
-          const value = Number(input.value);
-          state[key] = value;
-          label.textContent = format(value);
-        };
-        input.addEventListener('input', sync);
-        sync();
-      }
-
-      bindRange(dom.rate, dom.rateLabel, 'rate', (v) => v.toFixed(2));
-      bindRange(dom.layers, dom.layersLabel, 'layers', (v) => String(v | 0));
-      bindRange(dom.spread, dom.spreadLabel, 'spread', (v) => v.toFixed(2));
-      bindRange(dom.coherence, dom.coherenceLabel, 'coherence', (v) => v.toFixed(2));
-      bindRange(dom.symmetry, dom.symmetryLabel, 'symmetry', (v) => String(v | 0));
-      bindRange(dom.fractal, dom.fractalLabel, 'fractal', (v) => v.toFixed(2));
-      bindRange(dom.bloom, dom.bloomLabel, 'bloom', (v) => v.toFixed(2));
-      bindRange(dom.rotation, dom.rotationLabel, 'rotation', (v) => v.toFixed(2));
-      bindRange(dom.structure, dom.structureLabel, 'structure', (v) => v.toFixed(2));
-      bindRange(dom.shapeBlend, dom.shapeBlendLabel, 'shapeBlend', (v) => `${Math.round(v * 100)}%`);
-
-      const bindSelect = (input, key) => {
-        const sync = () => {
-          state[key] = Number(input.value);
-        };
-        input.addEventListener('change', sync);
-        sync();
-      };
-
-      bindSelect(dom.shapeA, 'shapeA');
-      bindSelect(dom.shapeB, 'shapeB');
-
-      document.querySelectorAll('[data-preset]').forEach((button) => {
-        button.addEventListener('click', () => {
-          const preset = button.getAttribute('data-preset');
-          const presets = {
-            focus: { rate: 7.2, layers: 7, spread: 0.72, coherence: 0.82, symmetry: 10, fractal: 0.8, bloom: 1.1, rotation: 0.2, structure: 0.16 },
-            flow: { rate: 6.0, layers: 8, spread: 0.88, coherence: 0.66, symmetry: 12, fractal: 0.95, bloom: 1.3, rotation: 0.34, structure: 0.38 },
-            deep: { rate: 4.5, layers: 9, spread: 0.62, coherence: 0.9, symmetry: 8, fractal: 1.15, bloom: 1.0, rotation: -0.18, structure: 0.54 },
-            dream: { rate: 2.7, layers: 10, spread: 1.1, coherence: 0.58, symmetry: 14, fractal: 1.35, bloom: 1.55, rotation: 0.5, structure: 0.78 }
-          };
-          const next = presets[preset];
-          if (!next) return;
-          Object.entries(next).forEach(([key, value]) => {
-            state[key] = value;
-          });
-          dom.rate.value = state.rate;
-          dom.layers.value = state.layers;
-          dom.spread.value = state.spread;
-          dom.coherence.value = state.coherence;
-          dom.symmetry.value = state.symmetry;
-          dom.fractal.value = state.fractal;
-          dom.bloom.value = state.bloom;
-          dom.rotation.value = state.rotation;
-          dom.structure.value = state.structure;
-          dom.rateLabel.textContent = state.rate.toFixed(2);
-          dom.layersLabel.textContent = String(state.layers | 0);
-          dom.spreadLabel.textContent = state.spread.toFixed(2);
-          dom.coherenceLabel.textContent = state.coherence.toFixed(2);
-          dom.symmetryLabel.textContent = String(state.symmetry | 0);
-          dom.fractalLabel.textContent = state.fractal.toFixed(2);
-          dom.bloomLabel.textContent = state.bloom.toFixed(2);
-          dom.rotationLabel.textContent = state.rotation.toFixed(2);
-          dom.structureLabel.textContent = state.structure.toFixed(2);
-          dom.engineState.textContent = preset.toUpperCase();
-          state.mode = preset === 'deep' ? 'atmospheric' : 'focus';
+        // --- UI Listeners ---
+        document.getElementById('btn-play').addEventListener('click', (e) => {
+            isRunning = !isRunning;
+            e.target.innerText = isRunning ? "Pause" : "Play";
+            e.target.className = isRunning 
+                ? "flex-1 bg-cyan-600 hover:bg-cyan-500 text-white py-2 rounded font-bold transition-colors"
+                : "flex-1 bg-green-600 hover:bg-green-500 text-white py-2 rounded font-bold transition-colors";
+            if (!isRunning) logEvent("Flow paused.");
+            else logEvent("Flow resumed.");
         });
-      });
 
-      dom.togglePlay.addEventListener('click', () => {
-        state.running = !state.running;
-        dom.togglePlay.textContent = state.running ? 'Pause' : 'Resume';
-        dom.engineState.textContent = state.running ? 'LIVE SYNTHESIS' : 'PAUSED';
-      });
+        document.getElementById('btn-step').addEventListener('click', () => {
+            for (let i = 0; i < 100; i++) {
+                engine.step();
+                if (engine.t % 2 === 0) {
+                    pathHistory.push(new Complex(engine.z.re, engine.z.im));
+                    if (pathHistory.length > MAX_PATH) pathHistory.shift();
+                }
+            }
+            render();
+            updateUI();
+            logEvent("Fast-forwarded 100 steps.", "text-white");
+        });
 
-      dom.recenter.addEventListener('click', () => {
-        state.focusX = 0.5;
-        state.focusY = 0.5;
-      });
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            engine = new Invariance();
+            pathHistory = [];
+            logContainer.innerHTML = '';
+            logEvent("System completely reset. Initializing from Null state.", "text-red-400");
+            if(!isRunning) render();
+        });
 
-      dom.toggleFullscreen.addEventListener('click', async () => {
-        const active = Boolean(getFullscreenElement()) || state.fullscreenMode === 'fallback';
-        if (active) {
-          await exitFullscreenMode();
-        } else {
-          await enterFullscreenMode();
-        }
-      });
+        document.getElementById('speed-slider').addEventListener('input', (e) => {
+            stepsPerFrame = parseInt(e.target.value);
+            document.getElementById('speed-val').innerText = `${stepsPerFrame} steps/frame`;
+        });
 
-      dom.toggleUi.addEventListener('click', () => {
-        toggleUiVisibility();
-      });
+        // Initialize and Start
+        logEvent("System Initialized. Form emerging.", "text-cyan-400");
+        simulationLoop();
 
-      dom.floatingShowUi.addEventListener('click', () => {
-        toggleUiVisibility(false);
-      });
-
-      dom.floatingFullscreenExit.addEventListener('click', async () => {
-        await exitFullscreenMode();
-      });
-
-      canvas.addEventListener('pointermove', (event) => {
-        const rect = canvas.getBoundingClientRect();
-        state.focusX = (event.clientX - rect.left) / rect.width;
-        state.focusY = 1.0 - (event.clientY - rect.top) / rect.height;
-        state.pointerActive = true;
-      });
-      canvas.addEventListener('pointerleave', () => {
-        state.pointerActive = false;
-      });
-
-      document.addEventListener('fullscreenchange', syncFullscreenUi);
-      document.addEventListener('webkitfullscreenchange', syncFullscreenUi);
-      document.addEventListener('msfullscreenchange', syncFullscreenUi);
-      window.addEventListener('orientationchange', resizeCanvas);
-      window.addEventListener('keydown', (event) => {
-        const tagName = document.activeElement && document.activeElement.tagName ? document.activeElement.tagName.toLowerCase() : '';
-        if (tagName === 'input' || tagName === 'select' || tagName === 'textarea') return;
-
-        if (event.key.toLowerCase() === 'u') {
-          event.preventDefault();
-          toggleUiVisibility();
-          return;
-        }
-
-        if (event.key === 'Escape' && state.fullscreenMode === 'fallback') {
-          state.fullscreenMode = 'windowed';
-          syncFullscreenUi();
-          return;
-        }
-
-        if (event.key === 'Escape' && state.uiHidden) {
-          toggleUiVisibility(false);
-        }
-      });
-
-      const setMode = (nextMode) => {
-        state.mode = nextMode;
-      };
-      setMode('focus');
-      syncFullscreenUi();
-      syncUiVisibility();
-
-      function updateWarnings(beatEnergy, fps, jitter) {
-        const warn = [];
-        if (state.rate > 10.5) {
-          warn.push('High rates can feel intense on a screen. Consider staying under 10 Hz for comfortable use.');
-        }
-        if (jitter > 2.5) {
-          warn.push('Frame jitter is elevated, so the pulse field may feel less stable.');
-        }
-        if (fps < 45) {
-          warn.push('Low frame rate detected. Try closing heavy tabs for smoother motion.');
-        }
-        if (beatEnergy > 0.86 && state.rate > 8.5) {
-          warn.push('Brightness is peaking. If this feels too strong, lower bloom or rate.');
-        }
-        if (state.layers >= 9 && state.coherence < 0.35) {
-          warn.push('Very loose coherence with dense nesting can read as chaotic. Raise coherence if you want cleaner phase locking.');
-        }
-        if (state.structure > 0.75 && fps < 52) {
-          warn.push('Structure reveal is pushing extra detail. Reducing it can smooth the field on slower GPUs.');
-        }
-
-        if (warn.length) {
-          dom.warning.style.display = 'block';
-          dom.warning.classList.toggle('danger', state.rate > 10.5);
-          dom.warning.textContent = warn.join(' ');
-        } else {
-          dom.warning.style.display = 'none';
-        }
-      }
-
-      gl.clearColor(0, 0, 0, 1);
-
-      function frame(now) {
-        const dt = now - runtime.lastNow;
-        runtime.lastNow = now;
-        runtime.samples[runtime.idx] = dt;
-        runtime.idx = (runtime.idx + 1) % runtime.samples.length;
-
-        let sum = 0;
-        for (const sample of runtime.samples) sum += sample;
-        const mean = sum / runtime.samples.length;
-        let variance = 0;
-        for (const sample of runtime.samples) {
-          const diff = sample - mean;
-          variance += diff * diff;
-        }
-        const jitter = Math.sqrt(variance / runtime.samples.length);
-        const fps = 1000 / mean;
-
-        const intensity = Math.max(0.18, Math.min(1.0, 0.28 + state.bloom * 0.24 + state.fractal * 0.08 + state.structure * 0.1));
-
-        if (state.running) {
-          runtime.phase = (runtime.phase + (dt / 1000) * state.rate) % 1;
-        }
-
-        const beat = 0.5 + 0.5 * Math.sin(runtime.phase * Math.PI * 2);
-        runtime.phaseJitter = jitter;
-
-        gl.useProgram(program);
-        gl.bindVertexArray(vao);
-        gl.uniform2f(uniforms.resolution, runtime.canvasWidth, runtime.canvasHeight);
-        gl.uniform1f(uniforms.time, now * 0.001);
-        gl.uniform1f(uniforms.rate, state.rate);
-        gl.uniform1f(uniforms.layers, state.layers);
-        gl.uniform1f(uniforms.spread, state.spread);
-        gl.uniform1f(uniforms.coherence, state.coherence);
-        gl.uniform1f(uniforms.symmetry, state.symmetry);
-        gl.uniform1f(uniforms.fractal, state.fractal);
-        gl.uniform1f(uniforms.bloom, state.bloom);
-        gl.uniform1f(uniforms.rotation, state.rotation);
-        gl.uniform1f(uniforms.structure, state.structure);
-        gl.uniform1f(uniforms.energy, intensity);
-        gl.uniform1i(uniforms.shapeA, state.shapeA);
-        gl.uniform1i(uniforms.shapeB, state.shapeB);
-        gl.uniform1f(uniforms.blend, state.shapeBlend);
-        gl.uniform2f(
-          uniforms.focus,
-          state.pointerActive ? state.focusX : 0.5,
-          state.pointerActive ? state.focusY : 0.5
-        );
-        gl.uniform1i(uniforms.mode, state.mode === 'atmospheric' ? 1 : 0);
-
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-        dom.fps.textContent = fps.toFixed(1);
-        dom.jitter.textContent = `${jitter.toFixed(2)} ms`;
-        dom.phase.textContent = runtime.phase.toFixed(3);
-        dom.energy.textContent = beat.toFixed(2);
-        dom.coherenceState.textContent = `${Math.round(state.coherence * 100)}%`;
-        dom.structureState.textContent = state.structure.toFixed(2);
-        updateWarnings(beat, fps, jitter);
-
-        requestAnimationFrame(frame);
-      }
-
-      requestAnimationFrame(frame);
-    }
-  </script>
+    </script>
 </body>
 </html>
