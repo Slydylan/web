@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mathematics &amp; Methods</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { @apply bg-gray-900 text-gray-200; }
+    h1, h2 { @apply text-cyan-400 font-bold; }
+    code { @apply text-yellow-300; }
+    p { @apply mb-4 leading-relaxed; }
+    section { @apply mb-12; }
+    ul { @apply list-disc list-inside mb-4; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <!-- Navigation bar -->
+  <nav class="fixed top-0 left-0 right-0 z-50 flex justify-center gap-8 py-3 bg-black/30 backdrop-blur-sm text-sm">
+    <a href="index.html" class="text-gray-300 hover:text-cyan-400 transition-colors">Invariance</a>
+    <a href="spiral.html" class="text-gray-300 hover:text-cyan-400 transition-colors">Spiral</a>
+    <a href="methods.html" class="text-cyan-400 font-bold">Math &amp; Methods</a>
+    <a href="applications.html" class="text-gray-300 hover:text-cyan-400 transition-colors">Applications</a>
+    <a href="iv.html" class="text-gray-300 hover:text-cyan-400 transition-colors">IV Demo</a>
+  </nav>
+  <main class="pt-20 px-6 md:px-20 pb-16 max-w-5xl mx-auto">
+    <h1 class="text-3xl mb-6">Mathematics &amp; Methods</h1>
+    <p>This page provides an overview of the mathematical foundations and algorithmic techniques used in this project. The core idea is <em>ontological recursion</em>: instead of generating content directly, we apply deterministic rules to gradually differentiate an initially undifferentiated state. This approach yields self‑referential structures such as log‑spirals, hex‑address spaces, and high‑dimensional membranes.</p>
+
+    <section id="complex">
+      <h2 class="text-2xl mb-2">Complex Numbers &amp; Log‑Spiral Dynamics</h2>
+      <p>The interactive <em>Invariance Engine</em> on the home page uses complex numbers to simulate a conformal flow. The state is a complex variable <code>z = x + i y</code>. At each step the engine computes the differential <code>delta = z − z₀</code>, derives the relative tension <code>T = |delta| / |z|</code>, converts tension into pressure (<code>P = T / (1 − T)</code>), and applies a small rotation to warp the flow into a logarithmic spiral. The engine also carves memory in log‑polar coordinates whenever information exceeds a threshold. When tension becomes extremely small, a <em>SLAM</em> triggers: the scale is boosted and accumulated memory depths are pruned.</p>
+      <p>The resulting dynamics produce a beautiful spiral path. You can experiment with the simulation’s speed, pause/resume, and reset. The math behind this is simple yet rich: <code>z</code> evolves via conformal curvature, pressure corresponds to angular warping, and memory carving creates nested topological features. This embodies the paradigm of emergent structure from minimal rules.</p>
+    </section>
+
+    <section id="hex">
+      <h2 class="text-2xl mb-2">Hex‑Native Color‑Coding</h2>
+      <p>The <code>HexAddr</code> concept replaces vectors or tuples with fixed‑length hexadecimal signatures. Each address has <code>k</code> <em>color slots</em> (nibbles) that form a color signature. Two addresses are considered equivalent if their first <code>k</code> nibbles match. The <code>HexAddr</code> class also exposes RGB values derived from the first 12 nibbles, allowing visual representation of addresses as colors. This color‑coding allows subgraph isomorphism testing via perfect hash families: to check whether a pattern appears in a target, compute color signatures and look for matching slots. The probability of accidental matches vanishes rapidly, and addresses can be blended or nudged in <em>hex‑space</em>.</p>
+      <ul>
+        <li><strong>Address construction:</strong> digest arbitrary parts (using BLAKE2b) into a 512‑bit integer; convert to hex; derive nibbles and RGB.</li>
+        <li><strong>Color matching:</strong> two addresses match if their first <code>k</code> nibbles coincide. This is used for subgraph matching.</li>
+        <li><strong>Blending:</strong> linear interpolation between two hex addresses produces a new address; this replaces explicit tension/projection machinery.</li>
+        <li><strong>Nudging:</strong> adjust along one axis in hex‑space to explore neighboring addresses without changing the signature drastically.</li>
+      </ul>
+      <p>By working entirely in hex‑space, one avoids error spaces and parity gaps. Complex error computations in the original implementation are replaced by deterministic hashing and blending. The <em>HexVM</em> then processes rows of addresses using operations such as BIFURCATE, CAST, REFINE and MERGE, each corresponding to blending or phase wrapping operations in hex‑space.</p>
+    </section>
+
+    <section id="q-space">
+      <h2 class="text-2xl mb-2">Q‑Space: Phase + Coordinates</h2>
+      <p>Many of the engines map hex addresses into a compact state space called <em>Q‑space</em>. A Q state <code>q = (phase, y, z)</code> consists of a wrapped phase and two additional coordinates. The functions <code>q_embed</code> and <code>q_unembed</code> convert between a 3‑tuple and a 4‑vector on the unit 3‑sphere, enabling computation of medians, distances, and blending in this space. Q‑space provides a compact domain for calculating error and projecting toward consensus, replacing more complex error surfaces.</p>
+      <p>The <em>ColorCodingEngine</em> iteratively resolves one cell at a time. At each step it calculates a projection (pull toward the median of recent successes and failures), applies a small random mutation, and decides whether the new candidate is a success based on error reduction and a slack parameter. Successful cells spawn neighbors via color‑coding, while failures trigger retries. A separate witness layer records medians across successes and failures to stabilize the trajectory.</p>
+    </section>
+
+    <section id="membranes">
+      <h2 class="text-2xl mb-2">Dynamic Membranes &amp; Shepherd Shards</h2>
+      <p>Another core component is the <em>Shepherd Shard</em>, which acts as a zero‑address virtual machine over an 8‑dimensional vector. Each step applies a set of 2×2 correction matrices, forming a block‑diagonal contraction across four 2D subspaces. The phase angle is incremented at each step, and the phase offsets adapt based on local variance, creating a dynamic coupling between subspaces. The shard maintains cumulative inverses so that it can unwind back to the base frame. Over time the residual vectors converge toward a dense membrane in 8D space.</p>
+      <p>On top of the shard, a <em>Recurrence Cluster Detector</em> performs deterministic clustering of residuals. Using a weighted density approach, it groups points whose parity distances and norms lie within a threshold, independent of iteration order. Each cluster’s center acts as a membrane capsule. This weighted clustering is crucial for detecting recurring structures and aligning phase offsets.</p>
+    </section>
+
+    <section id="spiral-prior">
+      <h2 class="text-2xl mb-2">Spiral Prior &amp; Conformal Addressing</h2>
+      <p>The <em>Spiral Prior</em> tracks a logarithmic spiral <code>r(θ) = A·exp(−λθ)</code> and adaptively updates its parameters. When the actual radius deviates from the predicted spiral beyond an adaptive threshold <code>τ</code>, the prior steps its parameters using gradient descent with clipping. A conformal correction then maps spiral deviations into discrete address shifts: inward/outward moves along the radial axis, casting with a phase shift, refining toward the cast, and merging to produce a blended address. This conformal addressing compresses the infinite spiral into a finite address lattice and forms the backbone of the integrated reality engine.</p>
+    </section>
+
+    <!-- New section about the IV Engine and derived physics -->
+    <section id="iv-engine">
+      <h2 class="text-2xl mb-2">IV Engine &amp; Derived Physics</h2>
+      <p>Beyond the Invariance Engine and color‑coding, the project also includes a purely mathematical IV Engine built around a golden‑ratio churn. The engine begins with a hex‑encoded <em>carrier wave</em> and iteratively applies a φ‑scaled update that generates a least‑action spiral in the complex plane. Each churn state falls into one of three <em>mass regimes</em>: negative (contracting near the origin), transition (equilibrium at the boundary), or positive (expanding outward). By sampling the engine across many steps we can compute positions along the spiral and see how the mass state evolves over time.</p>
+      <p>The IV Engine also exhibits quantum‑like effects. When the spiral path is superposed with its mirrored counterpart, an <strong>interference pattern</strong> emerges; constructive and destructive peaks appear at regular intervals. Another derived quantity is a <strong>tunneling probability</strong> – the likelihood that the system will “tunnel” through its potential barrier and exit the current well. Remarkably, these phenomena arise deterministically from the initial seed and the golden‑ratio dynamics.</p>
+      <p>An <em>IV Demo</em> page visualizes these derived quantities. You can view the spiral path traced by the engine, examine a bar chart of mass regimes across the churn, inspect the interference amplitudes, and watch a gauge representing the tunneling probability. Together, these tools show how simple mathematical rules can produce rich physical behavior and provide a sandbox for exploring emergent physics.</p>
+    </section>
+
+    <p>These components work together to produce rich, self‑organizing structures from simple rules. By combining complex dynamics, deterministic hashing, phase‑coupled membranes, and conformal spiral corrections, the system generates ontologies that can be used to simulate intelligence, generate content, and drive games and software. The next page explores potential applications.</p>
+  </main>
+</body>
+</html>
