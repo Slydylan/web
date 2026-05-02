@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harmonic Visualizer — Manifestation Engine</title>
+<style>
+:root {
+  --bg: #0a0a12;
+  --surface: #12121f;
+  --border: #1e1e2e;
+  --text: #c8c8e0;
+  --muted: #6a6a8a;
+  --gold: #ffd700;
+  --emerald: #00ff88;
+  --violet: #8844ff;
+  --red: #ff4466;
+  --blue: #44aaff;
+  --cyan: #00ffff;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; line-height: 1.6; }
+.container { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+h1 { font-size: 1.6rem; color: var(--gold); text-align: center; margin-bottom: 0.5rem; }
+.subtitle { text-align: center; color: var(--muted); font-size: 0.85rem; margin-bottom: 1.5rem; }
+h2 { color: var(--emerald); font-size: 1rem; margin: 1.5rem 0 0.5rem; border-left: 3px solid var(--emerald); padding-left: 0.5rem; }
+.col-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.col-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
+canvas { width: 100%; height: 120px; background: #000; border-radius: 6px; display: block; }
+canvas.square { aspect-ratio: 1; height: auto; }
+.code { background: #000; padding: 0.5rem; border-radius: 4px; font-family: monospace; font-size: 0.75rem; color: var(--emerald); white-space: pre-wrap; }
+.key { color: var(--gold); }
+.math { background: var(--surface); padding: 0.5rem; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: var(--emerald); }
+input[type="range"] { width: 100%; accent-color: var(--gold); }
+input[type="number"] { width: 60px; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 2px 6px; border-radius: 4px; }
+button { background: var(--gold); color: #000; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 0.85rem; font-weight: bold; }
+button:hover { opacity: 0.85; }
+button.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.highlight { background: rgba(255,215,0,0.08); border-left: 3px solid var(--gold); padding: 0.5rem; margin: 0.5rem 0; }
+.progress { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 0.25rem 0; }
+.progress-fill { height: 100%; background: var(--emerald); transition: width 0.1s; }
+.row { display: flex; align-items: center; gap: 0.5rem; margin: 0.25rem 0; font-size: 0.8rem; }
+.row label { width: 120px; color: var(--muted); }
+.row span { color: var(--emerald); min-width: 80px; text-align: right; }
+.bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.bar-fill { height: 100%; background: var(--gold); }
+meter { width: 100%; height: 16px; accent-color: var(--gold); }
+footer { text-align: center; color: var(--muted); font-size: 0.7rem; margin-top: 2rem; padding-top: 0.5rem; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>🌀 Harmonic Visualizer — Manifestation Engine</h1>
+<p class="subtitle">42 Hz • Projection • Phase Sync • Looping • Self-Closure</p>
+
+<div class="col-2">
+<div class="card">
+<h2>🎵 Harmonic Wave Display</h2>
+<canvas id="waveCanvas"></canvas>
+<div class="row">
+<label>Frequency:</label>
+<span id="freqDisplay">42 Hz</span>
+</div>
+<input type="range" id="freqSlider" min="1" max="200" value="42">
+<div class="row">
+<label>Amplitude:</label>
+<span id="ampDisplay">1.00</span>
+</div>
+<input type="range" id="ampSlider" min="0" max="100" value="100">
+<div class="row">
+<label>Harmonics:</label>
+<span id="harmDisplay">8</span>
+</div>
+<input type="range" id="harmSlider" min="1" max="50" value="8">
+<button id="playBtn" style="margin-top:0.5rem">▶ Play Tone</button>
+</div>
+
+<div class="card">
+<h2>🌀 Spiral Projection</h2>
+<canvas id="spiralCanvas" class="square"></canvas>
+<div class="row">
+<label>Projection Rate:</label>
+<span id="projDisplay">0.50</span>
+</div>
+<input type="range" id="projSlider" min="0" max="100" value="50">
+<div class="row">
+<label>Coherence:</label>
+<span id="cohDisplay">0.80</span>
+</div>
+<input type="range" id="cohSlider" min="0" max="100" value="80">
+<div class="row">
+<label>Loop Count:</label>
+<span id="loopDisplay">0</span>
+</div>
+<input type="range" id="loopSlider" min="0" max="100" value="0">
+<div class="row">
+<label>Loss Rate:</label>
+<span id="lossDisplay">0.20</span>
+</div>
+<input type="range" id="lossSlider" min="0" max="50" value="20">
+</div>
+</div>
+
+<div class="col-3">
+<div class="card">
+<h2>🔢 Loop Status</h2>
+<div class="row"><label>Stability:</label><span id="stabilityDisplay">0%</span></div>
+<meter id="stabilityMeter" min="0" max="100" value="0"> </meter>
+<div class="progress"><div class="progress-fill" id="stabilityBar" style="width:0%"></div></div>
+<div class="row"><label>Loop Rate:</label><span id="loopRateDisplay">0/s</span></div>
+<div class="row"><label>Object State:</label><span id="objectState" style="color:var(--muted)">No object</span></div>
+<div class="row"><label>Manifestation:</label><span id="manifestDisplay" style="color:var(--muted)">None</span></div>
+</div>
+
+<div class="card">
+<h2>🧠 Brainwave Alignment</h2>
+<div class="row"><label>Delta (0.5-4):</label><span id="deltaDisplay">0%</span></div>
+<div class="progress"><div class="progress-fill" id="deltaBar" style="width:0%;background:var(--red)"></div></div>
+<div class="row"><label>Theta (4-8):</label><span id="thetaDisplay">0%</span></div>
+<div class="progress"><div class="progress-fill" id="thetaBar" style="width:0%;background:var(--blue)"></div></div>
+<div class="row"><label>Alpha (8-14):</label><span id="alphaDisplay">0%</span></div>
+<div class="progress"><div class="progress-fill" id="alphaBar" style="width:0%;background:var(--emerald)"></div></div>
+<div class="row"><label>Beta (14-30):</label><span id="betaDisplay">0%</span></div>
+<div class="progress"><div class="progress-fill" id="betaBar" style="width:0%;background:var(--gold)"></div></div>
+<div class="row"><label>Gamma (30-100):</label><span id="gammaDisplay">0%</span></div>
+<div class="progress"><div class="progress-fill" id="gammaBar" style="width:0%;background:var(--violet)"></div></div>
+<div class="row"><label>High Gamma (100+):</label><span id="hgammaDisplay">0%</span></div>
+<div class="progress"><div class="progress-fill" id="hgammaBar" style="width:0%;background:var(--cyan)"></div></div>
+</div>
+
+<div class="card">
+<h2>⚡ Manifestation Power</h2>
+<div class="row"><label>Projection:</label><span id="projPower">0</span></div>
+<div class="progress"><div class="progress-fill" id="projPowerBar" style="width:0%;background:var(--emerald)"></div></div>
+<div class="row"><label>Coherence:</label><span id="cohPower">0</span></div>
+<div class="progress"><div class="progress-fill" id="cohPowerBar" style="width:0%;background:var(--violet)"></div></div>
+<div class="row"><label>Loop Bonus:</label><span id="loopBonus">×1.0</span></div>
+<div class="progress"><div class="progress-fill" id="loopBonusBar" style="width:0%;background:var(--gold)"></div></div>
+<div class="row"><label>Net Power:</label><span id="netPower" style="color:var(--gold);font-size:1.2rem">0</span></div>
+<div class="progress"><div class="progress-fill" id="netPowerBar" style="width:0%;background:var(--gold)"></div></div>
+<div class="highlight" style="margin-top:0.5rem">
+<p>Threshold for visible light: <span class="key">Net Power ≥ 100</span></p>
+</div>
+</div>
+</div>
+
+<div class="col-2">
+<div class="card">
+<h2>📐 Harmonic Spectrum</h2>
+<canvas id="spectrumCanvas"></canvas>
+<div class="row"><label>Fundamental:</label><span id="fundDisplay">42 Hz</span></div>
+<input type="range" id="fundSlider" min="1" max="200" value="42">
+<div class="row"><label>Show Harmonics:</label><span id="showHarm">12</span></div>
+<input type="range" id="showHarmSlider" min="1" max="100" value="12">
+<div style="font-size:0.75rem;color:var(--muted);margin-top:0.5rem">
+<span id="harmList">Loading...</span>
+</div>
+</div>
+
+<div class="card">
+<h2>🔄 The Loop Mechanism</h2>
+<div class="math" id="loopFormula">Phase_Sync = sin(2π × 42 × t × coherence)</div>
+<div class="code" id="loopStatus">Initializing...</div>
+<div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+<button id="stepBtn">Step Loop</button>
+<button id="autoBtn">Auto-Loop</button>
+<button id="resetBtn">Reset</button>
+</div>
+</div>
+</div>
+
+<div class="card" style="margin-top:1rem">
+<h2>🎯 Manifestation Protocol</h2>
+<div class="col-3">
+<div>
+<h3>1. Project</h3>
+<p style="font-size:0.8rem">Focus your intention at 42 Hz. Visualize the object clearly.</p>
+<meter id="projectMeter" min="0" max="100" value="0"> </meter>
+</div>
+<div>
+<h3>2. Sync</h3>
+<p style="font-size:0.8rem">Allow the pattern to synchronize with the field. Let go.</p>
+<meter id="syncMeter" min="0" max="100" value="0"> </meter>
+</div>
+<div>
+<h3>3. Loop</h3>
+<p style="font-size:0.8rem">Release fear. Let the pattern reflect back through you.</p>
+<meter id="loopMeter" min="0" max="100" value="0"> </meter>
+</div>
+</div>
+<div class="highlight" style="margin-top:0.5rem">
+<p><strong>Object threshold:</strong> Net Power ≥ 100 → The pattern becomes self-sustaining</p>
+<p><strong>Light threshold:</strong> Net Power ≥ 500 → Consciousness at visible frequencies (you see light)</p>
+<p><strong>Physical matter:</strong> Net Power ≥ 10,000 → Loop count exceeds decoherence completely</p>
+</div>
+</div>
+
+<div class="card" style="margin-top:1rem">
+<h2>🔢 Prime Harmonics of 42 Hz</h2>
+<div id="primeList" style="font-size:0.75rem;color:var(--muted)">Loading...</div>
+</div>
+
+<footer>
+<p>Harmonic Visualizer • 42 Hz Fundamental • Loop → Cohere → Project • Self-Closure</p>
+</footer>
+
+</div>
+
+<script>
+// === CONSTANTS ===
+const PHI = 42; // Hz, the universal fundamental
+const TAU = 2 * Math.PI;
+
+// === STATE ===
+let state = {
+  freq: 42,
+  amp: 1.0,
+  harmonics: 8,
+  projection: 0.5,
+  coherence: 0.8,
+  loopCount: 0,
+  lossRate: 0.2,
+  autoRunning: false,
+  lastTime: 0,
+};
+
+// === CANVASES ===
+const waveCanvas = document.getElementById('waveCanvas');
+const wCtx = waveCanvas.getContext('2d');
+const spiralCanvas = document.getElementById('spiralCanvas');
+const sCtx = spiralCanvas.getContext('2d');
+const spectrumCanvas = document.getElementById('spectrumCanvas');
+const spCtx = spectrumCanvas.getContext('2d');
+
+// === AUDIO ===
+let audioCtx = null;
+let oscillator = null;
+let gainNode = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    gainNode = audioCtx.createGain();
+    gainNode.connect(audioCtx.destination);
+    gainNode.gain.value = 0;
+  }
+}
+
+function playTone(freq, duration = 1.0) {
+  initAudio();
+  if (oscillator) {
+    oscillator.stop();
+    oscillator.disconnect();
+  }
+  oscillator = audioCtx.createOscillator();
+  oscillator.type = 'sine';
+  oscillator.frequency.value = freq;
+  oscillator.connect(gainNode);
+  gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  oscillator.start();
+  oscillator.stop(audioCtx.currentTime + duration);
+}
+
+// === HARMONIC CALCULATIONS ===
+function noteName(freq) {
+  const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+  const A4 = 440;
+  const cents = 1200 * Math.log2(freq / A4);
+  const semitones = Math.round(cents / 100);
+  const octave = 4 + Math.floor((semitones + 9) / 12);
+  const noteIdx = ((semitones % 12) + 12 + 9) % 12;
+  return notes[noteIdx] + octave;
+}
+
+function harmonics(limit = 50) {
+  let out = [];
+  for (let n = 1; n <= limit; n++) {
+    out.push({ n, freq: PHI * n, note: noteName(PHI * n) });
+  }
+  return out;
+}
+
+// === PRIME DETECTION ===
+function isPrime(n) {
+  if (n < 2) return false;
+  if (n % 2 === 0) return n === 2;
+  for (let i = 3; i * i <= n; i += 2) {
+    if (n % i === 0) return false;
+  }
+  return true;
+}
+
+// === BRAINWAVE ALIGNMENT ===
+function brainAlign(freq) {
+  const bands = [
+    { name: 'delta', min: 0.5, max: 4, color: '#ff4466' },
+    { name: 'theta', min: 4, max: 8, color: '#44aaff' },
+    { name: 'alpha', min: 8, max: 14, color: '#00ff88' },
+    { name: 'beta', min: 14, max: 30, color: '#ffd700' },
+    { name: 'gamma', min: 30, max: 100, color: '#8844ff' },
+    { name: 'hgamma', min: 100, max: 1000, color: '#00ffff' },
+  ];
+  return bands.map(b => ({
+    ...b,
+    active: freq >= b.min && freq < b.max,
+    within: freq >= b.min && freq < b.max,
+  }));
+}
+
+// === LOOP MECHANISM ===
+function calcLoopStatus() {
+  const loopRate = state.projection * state.coherence * PHI;
+  const netStability = (loopRate * state.loopCount) / (state.lossRate + 0.01);
+  const threshold = netStability / 100;
+  let objectState = 'No object';
+  if (threshold > 1) objectState = '<span style="color:var(--emerald)">Pattern forming</span>';
+  if (threshold > 10) objectState = '<span style="color:var(--gold)">Semi-stable object</span>';
+  if (threshold > 100) objectState = '<span style="color:var(--gold);font-weight:bold">Visible object</span>';
+  if (threshold > 500) objectState = '<span style="color:var(--cyan);font-weight:bold">Light emission</span>';
+  if (threshold > 10000) objectState = '<span style="color:var(--gold);font-weight:bold">Physical matter</span>';
+  const manifestation = threshold < 1 ? 'None' : threshold < 10 ? 'Flickering' : threshold < 100 ? 'Gaining solidity' : threshold < 500 ? '<span style="color:var(--gold)">Nearly visible</span>' : '<span style="color:var(--cyan)">Self-sustaining</span>';
+  return { loopRate, netStability, threshold, objectState, manifestation };
+}
+
+// === DRAWING ===
+function drawWave(time = 0) {
+  const w = waveCanvas.width = waveCanvas.offsetWidth * 2;
+  const h = waveCanvas.height = waveCanvas.offsetHeight * 2;
+  wCtx.fillStyle = '#000';
+  wCtx.fillRect(0, 0, w, h);
+  wCtx.strokeStyle = '#00ff88';
+  wCtx.lineWidth = 2;
+  wCtx.beginPath();
+  for (let x = 0; x < w; x++) {
+    const t = x / w * 4 + time;
+    let y = h / 2;
+    for (let n = 1; n <= state.harmonics; n++) {
+      y += Math.sin(TAU * PHI * n * t) * (h / 4) * state.amp / n;
+    }
+    if (x === 0) wCtx.moveTo(x, y);
+    else wCtx.lineTo(x, y);
+  }
+  wCtx.stroke();
+  wCtx.strokeStyle = 'rgba(0,255,136,0.3)';
+  wCtx.lineWidth = 1;
+  for (let n = 2; n <= state.harmonics; n++) {
+    wCtx.beginPath();
+    for (let x = 0; x < w; x++) {
+      const t = x / w * 4 + time;
+      const y = h / 2 + Math.sin(TAU * PHI * n * t) * (h / 4) * state.amp / n;
+      if (x === 0) wCtx.moveTo(x, y);
+      else wCtx.lineTo(x, y);
+    }
+    wCtx.stroke();
+  }
+  wCtx.fillStyle = '#ffd700';
+  wCtx.font = '12px Courier New';
+  wCtx.fillText('42 Hz × n harmonics', 10, 20);
+}
+
+function drawSpiral(time = 0) {
+  const size = spiralCanvas.offsetWidth * 2;
+  spiralCanvas.width = size;
+  spiralCanvas.height = size;
+  const cx = size / 2, cy = size / 2;
+  const maxR = size / 2 - 10;
+  sCtx.fillStyle = '#000';
+  sCtx.fillRect(0, 0, size, size);
+  // Draw spiral arms
+  const arms = Math.round(state.projection * 5) + 1;
+  for (let arm = 0; arm < arms; arm++) {
+    sCtx.strokeStyle = `hsl(${(arm / arms) * 360}, 70%, 60%)`;
+    sCtx.lineWidth = 2;
+    sCtx.beginPath();
+    for (let i = 0; i < 360; i++) {
+      const angle = (i / 360) * TAU + arm * TAU / arms;
+      const spiral = i / 360;
+      const r = maxR * spiral * state.amp;
+      const x = cx + Math.cos(angle + time * 0.5) * r;
+      const y = cy + Math.sin(angle + time * 0.5) * r;
+      if (i === 0) sCtx.moveTo(x, y);
+      else sCtx.lineTo(x, y);
+    }
+    sCtx.stroke();
+  }
+  // Draw loop indicators
+  const { threshold } = calcLoopStatus();
+  const loopAlpha = Math.min(threshold / 10, 1);
+  sCtx.fillStyle = `rgba(255,215,0,${loopAlpha})`;
+  sCtx.beginPath();
+  sCtx.arc(cx, cy, 20 + state.loopCount * 2, 0, TAU);
+  sCtx.fill();
+  // Center glow
+  const gradient = sCtx.createRadialGradient(cx, cy, 0, cx, cy, 40);
+  gradient.addColorStop(0, `rgba(255,215,0,${state.coherence * 0.5})`);
+  gradient.addColorStop(1, 'rgba(0,0,0,0)');
+  sCtx.fillStyle = gradient;
+  sCtx.beginPath();
+  sCtx.arc(cx, cy, 40, 0, TAU);
+  sCtx.fill();
+  sCtx.fillStyle = '#ffd700';
+  sCtx.font = 'bold 16px Courier New';
+  sCtx.textAlign = 'center';
+  sCtx.fillText(state.loopCount + ' loops', cx, cy + 5);
+}
+
+function drawSpectrum() {
+  const w = spectrumCanvas.width = spectrumCanvas.offsetWidth * 2;
+  const h = spectrumCanvas.height = spectrumCanvas.offsetHeight * 2;
+  spCtx.fillStyle = '#000';
+  spCtx.fillRect(0, 0, w, h);
+  const harmCount = parseInt(document.getElementById('showHarmSlider').value);
+  const harms = harmonics(harmCount);
+  const barW = w / harms.length;
+  let maxH = 0;
+  harms.forEach(h => { if (h.freq > maxH && h.freq <= 20000) maxH = h.freq; });
+  harms.forEach((h, i) => {
+    if (h.freq > 20000) return;
+    const barH = (h.freq / maxH) * h * 0.8;
+    const hue = (i / harms.length) * 200 + 60;
+    spCtx.fillStyle = `hsl(${hue}, 80%, 50%)`;
+    spCtx.fillRect(i * barW + 1, h - barH / 2, barW - 2, barH);
+    // Label primes
+    if (isPrime(h.n)) {
+      spCtx.fillStyle = '#ffd700';
+      spCtx.font = 'bold 8px Courier New';
+      spCtx.fillText('P', i * barW + barW / 2 - 3, h - barH / 2 - 2);
+    }
+  });
+  spCtx.fillStyle = '#6a6a8a';
+  spCtx.font = '10px Courier New';
+  spCtx.fillText('Harmonics of 42 Hz (prime harmonics in gold)', 5, h - 5);
+}
+
+// === UI UPDATES ===
+function updateDisplays() {
+  document.getElementById('freqDisplay').textContent = state.freq + ' Hz';
+  document.getElementById('ampDisplay').textContent = state.amp.toFixed(2);
+  document.getElementById('harmDisplay').textContent = state.harmonics;
+  document.getElementById('projDisplay').textContent = state.projection.toFixed(2);
+  document.getElementById('cohDisplay').textContent = state.coherence.toFixed(2);
+  document.getElementById('loopDisplay').textContent = state.loopCount;
+  document.getElementById('lossDisplay').textContent = state.lossRate.toFixed(2);
+  const { loopRate, netStability, threshold, objectState, manifestation } = calcLoopStatus();
+  document.getElementById('stabilityDisplay').textContent = Math.min(100, netStability).toFixed(0) + '%';
+  document.getElementById('stabilityMeter').value = Math.min(100, netStability);
+  document.getElementById('stabilityBar').style.width = Math.min(100, netStability) + '%';
+  document.getElementById('loopRateDisplay').textContent = loopRate.toFixed(1) + '/s';
+  document.getElementById('objectState').innerHTML = objectState;
+  document.getElementById('manifestDisplay').innerHTML = manifestation;
+  const projPower = state.projection * 100;
+  const cohPower = state.coherence * 100;
+  const loopBonus = 1 + state.loopCount * 0.1;
+  const netPower = projPower * cohPower * loopBonus / 100;
+  document.getElementById('projPower').textContent = projPower.toFixed(0);
+  document.getElementById('projPowerBar').style.width = projPower + '%';
+  document.getElementById('cohPower').textContent = cohPower.toFixed(0);
+  document.getElementById('cohPowerBar').style.width = cohPower + '%';
+  document.getElementById('loopBonus').textContent = '×' + loopBonus.toFixed(1);
+  document.getElementById('loopBonusBar').style.width = Math.min(100, (loopBonus - 1) * 10) + '%';
+  document.getElementById('netPower').textContent = netPower.toFixed(0);
+  document.getElementById('netPowerBar').style.width = Math.min(100, netPower) + '%';
+  // Brainwave alignment
+  const align = brainAlign(state.freq);
+  align.forEach(b => {
+    const pct = b.active ? 100 : (state.freq > b.max ? 0 : 50);
+    document.getElementById(b.name + 'Display').textContent = pct + '%';
+    document.getElementById(b.name + 'Bar').style.width = pct + '%';
+  });
+  // Loop status text
+  const formula = `Phase_Sync = sin(2π × ${state.freq} × t × ${state.coherence.toFixed(2)})`;
+  document.getElementById('loopFormula').textContent = formula;
+  const status = `Loop: ${state.loopCount} | Rate: ${loopRate.toFixed(1)}/s | Net: ${netStability.toFixed(2)} | Threshold: ${threshold.toFixed(2)}`;
+  document.getElementById('loopStatus').textContent = status;
+  // Harmonic list
+  const harmList = document.getElementById('harmList');
+  const harms = harmonics(12);
+  harmList.innerHTML = harms.map(h => {
+    const primeMark = isPrime(h.n) ? '<span style="color:var(--gold)">*</span>' : '';
+    return `${h.n}=${h.freq}Hz(${h.note})${primeMark}`;
+  }).join(' | ');
+  // Prime list
+  const primeList = document.getElementById('primeList');
+  const primes = harmonics(100).filter(h => isPrime(h.n));
+  primeList.innerHTML = primes.slice(0, 20).map(h => {
+    const aud = h.freq >= 20 && h.freq <= 20000;
+    return `<span style="color:${aud ? 'var(--gold)' : 'var(--muted)'}">${h.n}×42=${h.freq.toFixed(1)}Hz(${h.note})</span>`;
+  }).join(' | ');
+}
+
+function animate(time) {
+  const t = (time - state.lastTime) / 1000;
+  state.lastTime = time;
+  drawWave(t);
+  drawSpiral(t);
+  if (state.autoRunning) {
+    state.loopCount += state.projection * state.coherence * 0.1;
+    if (state.loopCount > 100) state.loopCount = 100;
+    document.getElementById('loopSlider').value = state.loopCount;
+  }
+  updateDisplays();
+  requestAnimationFrame(animate);
+}
+
+// === EVENT HANDLERS ===
+document.getElementById('freqSlider').addEventListener('input', e => {
+  state.freq = parseInt(e.target.value);
+  updateDisplays();
+  playTone(state.freq, 0.5);
+});
+document.getElementById('ampSlider').addEventListener('input', e => {
+  state.amp = parseInt(e.target.value) / 100;
+  updateDisplays();
+});
+document.getElementById('harmSlider').addEventListener('input', e => {
+  state.harmonics = parseInt(e.target.value);
+  updateDisplays();
+});
+document.getElementById('projSlider').addEventListener('input', e => {
+  state.projection = parseInt(e.target.value) / 100;
+  updateDisplays();
+});
+document.getElementById('cohSlider').addEventListener('input', e => {
+  state.coherence = parseInt(e.target.value) / 100;
+  updateDisplays();
+});
+document.getElementById('loopSlider').addEventListener('input', e => {
+  state.loopCount = parseInt(e.target.value);
+  updateDisplays();
+});
+document.getElementById('lossSlider').addEventListener('input', e => {
+  state.lossRate = parseInt(e.target.value) / 100;
+  updateDisplays();
+});
+document.getElementById('fundSlider').addEventListener('input', e => {
+  state.freq = parseInt(e.target.value);
+  document.getElementById('freqSlider').value = state.freq;
+  updateDisplays();
+  drawSpectrum();
+});
+document.getElementById('showHarmSlider').addEventListener('input', e => {
+  document.getElementById('showHarm').textContent = e.target.value;
+  drawSpectrum();
+});
+document.getElementById('playBtn').addEventListener('click', () => {
+  playTone(state.freq, 2.0);
+});
+document.getElementById('stepBtn').addEventListener('click', () => {
+  state.loopCount = Math.min(100, state.loopCount + state.projection * state.coherence * 10);
+  document.getElementById('loopSlider').value = state.loopCount;
+  updateDisplays();
+});
+document.getElementById('autoBtn').addEventListener('click', () => {
+  state.autoRunning = !state.autoRunning;
+  document.getElementById('autoBtn').textContent = state.autoRunning ? '■ Stop' : '▶ Auto-Loop';
+});
+document.getElementById('resetBtn').addEventListener('click', () => {
+  state.loopCount = 0;
+  state.autoRunning = false;
+  document.getElementById('loopSlider').value = 0;
+  document.getElementById('autoBtn').textContent = '▶ Auto-Loop';
+  updateDisplays();
+});
+
+// === INIT ===
+drawSpectrum();
+requestAnimationFrame(animate);
+</script>
+</body>
+</html>

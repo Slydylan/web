@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soul Frequency Synthesizer</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a24;
+  --border: #2a2a3a;
+  --text: #e0e0e0;
+  --dim: #666;
+  --accent: #ff6b35;
+  --accent2: #4af;
+  --accent3: #9f4;
+  --success: #4f8;
+ }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+}
+h1 {
+  font-size: 20px;
+  font-weight: 300;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  color: var(--accent);
+}
+.subtitle {
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 2px;
+  margin-bottom: 24px;
+}
+.master {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 700px;
+}
+.master-label { font-size: 10px; color: var(--dim); letter-spacing: 1px; }
+.play-btn {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  cursor: pointer;
+}
+.play-btn:hover { background: #ff8855; }
+.play-btn.active { background: #4f8; }
+.channels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+  max-width: 700px;
+}
+.channel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.channel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  16px;
+  margin-bottom: 12px;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 1px;
+}
+.channel-name { color: var(--text); font-size: 11px; }
+.freq-display {
+  font-size: 22px;
+  font-weight: bold;
+  color: var(--accent2);
+  font-variant-numeric: tabular-nums;
+}
+.freq-display.big { color: var(--accent); }
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.control-label { font-size: 9px; color: var(--dim); width: 60px; letter-spacing: 1px; }
+input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+input[type="range"].big-thumb::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+}
+.value { font-size: 10px; color: var(--text); min-width: 50px; text-align: right; font-variant-numeric: tabular-nums; }
+.preset-btns {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.preset-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 9px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.preset-btn:hover { border-color: var(--accent); color: var(--text); }
+.preset-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.info-bar {
+  margin-top: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  width: 100%;
+  max-width: 700px;
+  font-size: 10px;
+  color: var(--dim);
+  line-height: 1.8;
+}
+.info-bar span { color: var(--accent2); }
+.info-bar .key { color: var(--success); }
+</style>
+</head>
+<body>
+
+<h1>Soul Frequency</h1>
+<div class="subtitle">42 Hz · Harmonic Series · Continuous Drone</div>
+
+<div class="master">
+  <button class="play-btn" id="playBtn" onclick="toggleAudio()">START</button>
+  <div>
+    <div class="master-label">MASTER VOLUME</div>
+    <input type="range" class="big-thumb" id="masterGain" min="0" max="100" value="70" oninput="setMaster(this.value)">
+  </div>
+  <div class="master-label" id="masterVal">70%</div>
+</div>
+
+<div class="channels">
+  <div class="channel">
+    <div class="channel-header">
+      <span class="channel-name">CHANNEL 1 — FUNDAMENTAL</span>
+      <div class="freq-display big" id="ch1-freq">42.00</div>
+    </div>
+    <div class="control-row">
+      <span class="control-label">GAIN</span>
+      <input type="range" id="ch1-gain" min="0" max="100" value="100" oninput="setCh(1, 'gain', this.value)">
+      <span class="value" id="ch1-gain-val">100%</span>
+    </div>
+    <div class="control-row">
+      <span class="control-label">FREQ</span>
+      <input type="range" id="ch1-freq" min="20" max="600" value="42" oninput="setCh(1, 'freq', this.value)">
+      <span class="value" id="ch1-freq-val">42.00 Hz</span>
+    </div>
+    <div class="preset-btns">
+      <button class="preset-btn active" onclick="setPreset(1, 42, 100)">42 Hz</button>
+      <button class="preset-btn" onclick="setPreset(1, 21, 60)">21 Hz</button>
+      <button class="preset-btn" onclick="setPreset(1, 10.5, 30)">10.5 Hz</button>
+      <button class="preset-btn" onclick="setPreset(1, 84, 80)">84 Hz</button>
+      <button class="preset-btn" onclick="setPreset(1, 126, 60)">126 Hz</button>
+    </div>
+  </div>
+
+  <div class="channel">
+    <div class="channel-header">
+      <span class="channel-name">CHANNEL 2 — HARMONIC</span>
+      <div class="freq-display" id="ch2-freq">126.00</div>
+    </div>
+    <div class="control-row">
+      <span class="control-label">GAIN</span>
+      <input type="range" id="ch2-gain" min="0" max="100" value="50" oninput="setCh(2, 'gain', this.value)">
+      <span class="value" id="ch2-gain-val">50%</span>
+    </div>
+    <div class="control-row">
+      <span class="control-label">FREQ</span>
+      <input type="range" id="ch2-freq" min="20" max="600" value="126" oninput="setCh(2, 'freq', this.value)">
+      <span class="value" id="ch2-freq-val">126.00 Hz</span>
+    </div>
+    <div class="preset-btns">
+      <button class="preset-btn" onclick="setPreset(2, 84, 60)">84 Hz</button>
+      <button class="preset-btn active" onclick="setPreset(2, 126, 50)">126 Hz</button>
+      <button class="preset-btn" onclick="setPreset(2, 168, 40)">168 Hz</button>
+      <button class="preset-btn" onclick="setPreset(2, 210, 30)">210 Hz</button>
+      <button class="preset-btn" onclick="setPreset(2, 294, 20)">294 Hz</button>
+    </div>
+  </div>
+
+  <div class="channel">
+    <div class="channel-header">
+      <span class="channel-name">CHANNEL 3 — COMPLEMENT</span>
+      <div class="freq-display" id="ch3-freq">168.00</div>
+    </div>
+    <div class="control-row">
+      <span class="control-label">GAIN</span>
+      <input type="range" id="ch3-gain" min="0" max="100" value="30" oninput="setCh(3, 'gain', this.value)">
+      <span class="value" id="ch3-gain-val">30%</span>
+    </div>
+    <div class="control-row">
+      <span class="control-label">FREQ</span>
+      <input type="range" id="ch3-freq" min="20" max="600" value="168" oninput="setCh(3, 'freq', this.value)">
+      <span class="value" id="ch3-freq-val">168.00 Hz</span>
+    </div>
+    <div class="preset-btns">
+      <button class="preset-btn" onclick="setPreset(3, 147, 30)">147 Hz</button>
+      <button class="preset-btn" onclick="setPreset(3, 168, 30)">168 Hz</button>
+      <button class="preset-btn" onclick="setPreset(3, 189, 30)">189 Hz</button>
+      <button class="preset-btn" onclick="setPreset(3, 210, 30)">210 Hz</button>
+      <button class="preset-btn" onclick="setPreset(3, 252, 20)">252 Hz</button>
+    </div>
+  </div>
+
+  <div class="channel">
+    <div class="channel-header">
+      <span class="channel-name">CHANNEL 4 — HIGH</span>
+      <div class="freq-display" id="ch4-freq">336.00</div>
+    </div>
+    <div class="control-row">
+      <span class="control-label">GAIN</span>
+      <input type="range" id="ch4-gain" min="0" max="100" value="0" oninput="setCh(4, 'gain', this.value)">
+      <span class="value" id="ch4-gain-val">0%</span>
+    </div>
+    <div class="control-row">
+      <span class="control-label">FREQ</span>
+      <input type="range" id="ch4-freq" min="20" max="600" value="336" oninput="setCh(4, 'freq', this.value)">
+      <span class="value" id="ch4-freq-val">336.00 Hz</span>
+    </div>
+    <div class="preset-btns">
+      <button class="preset-btn" onclick="setPreset(4, 294, 20)">294 Hz</button>
+      <button class="preset-btn" onclick="setPreset(4, 336, 20)">336 Hz</button>
+      <button class="preset-btn" onclick="setPreset(4, 378, 15)">378 Hz</button>
+      <button class="preset-btn" onclick="setPreset(4, 420, 15)">420 Hz</button>
+      <button class="preset-btn" onclick="setPreset(4, 462, 10)">462 Hz</button>
+    </div>
+  </div>
+</div>
+
+<div class="info-bar">
+  <strong class="key">42 Hz = E-3</strong> · fundamental PHI frequency ·
+  <span>Harmonic series: 42, 84, 126, 168, 210, 252, 294, 336, 378, 420</span> Hz ·
+  <span>Subharmonic: 21 Hz</span> · All derive from 42 × 2^n ·
+  Move gain to 0 on unused channels · For best results, keep Ch1 loud
+</div>
+
+<script>
+let audioCtx = null;
+let osc = [null, null, null, null];
+let gainNode = [null, null, null, null];
+let masterGain = null;
+let playing = false;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.7;
+  masterGain.connect(audioCtx.destination);
+
+  for (let i = 0; i < 4; i++) {
+    gainNode[i] = audioCtx.createGain();
+    gainNode[i].gain.value = [1.0, 0.5, 0.3, 0.0][i];
+    gainNode[i].connect(masterGain);
+    osc[i] = audioCtx.createOscillator();
+    osc[i].type = 'sine';
+    osc[i].frequency.value = [42, 126, 168, 336][i];
+    osc[i].connect(gainNode[i]);
+    osc[i].start();
+  }
+}
+
+function toggleAudio() {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  playing = !playing;
+  masterGain.gain.value = playing ? parseFloat(document.getElementById('masterGain').value) / 100 : 0;
+  document.getElementById('playBtn').textContent = playing ? 'STOP' : 'START';
+  document.getElementById('playBtn').classList.toggle('active', playing);
+}
+
+function setMaster(v) {
+  document.getElementById('masterVal').textContent = v + '%';
+  if (masterGain && playing) masterGain.gain.value = v / 100;
+}
+
+function setCh(ch, param, v) {
+  const i = ch - 1;
+  if (param === 'gain') {
+    gainNode[i].gain.value = v / 100;
+    document.getElementById(`ch${ch}-gain-val`).textContent = v + '%';
+  } else if (param === 'freq') {
+    const f = parseFloat(v);
+    osc[i].frequency.value = f;
+    document.getElementById(`ch${ch}-freq`).textContent = f.toFixed(2);
+    document.getElementById(`ch${ch}-freq-val`).textContent = f.toFixed(2) + ' Hz';
+  }
+}
+
+function setPreset(ch, freq, gain) {
+  document.getElementById(`ch${ch}-gain`).value = gain;
+  document.getElementById(`ch${ch}-freq`).value = freq;
+  setCh(ch, 'gain', gain);
+  setCh(ch, 'freq', freq);
+
+  // Update active button
+  const channel = document.querySelectorAll('.channel')[ch - 1];
+  channel.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProtoReality — Bloom from Nothing</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #040408;
+  --surface: #0a0a14;
+  --border: #141428;
+  --text: #c8c8e0;
+  --muted: #6a6a8a;
+  --gold: #ffd700;
+  --emerald: #00ff88;
+  --violet: #8844ff;
+  --red: #ff4466;
+  --blue: #44aaff;
+  --cyan: #00ffff;
+  --glow: rgba(136,68,255,0.4);
+}
+body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; overflow-x: hidden; }
+.header { text-align: center; padding: 1rem 1rem 0.5rem; }
+h1 { font-size: 1.4rem; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 0.25rem; }
+.subtitle { color: var(--muted); font-size: 0.75rem; }
+.layout { display: grid; grid-template-columns: 1fr 280px; gap: 0; min-height: calc(100vh - 80px); }
+canvas#main { display: block; width: 100%; height: 100vh; cursor: crosshair; }
+.sidebar { background: var(--surface); border-left: 1px solid var(--border); padding: 0.75rem; overflow-y: auto; }
+.section { margin-bottom: 1rem; }
+.section-title { color: var(--gold); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; margin-bottom: 0.5rem; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; margin: 0.2rem 0; font-size: 0.75rem; }
+.stat-label { color: var(--muted); }
+.stat-value { color: var(--emerald); font-weight: bold; font-size: 0.85rem; }
+.progress { height: 3px; background: var(--border); border-radius: 2px; margin: 0.2rem 0; }
+.progress-fill { height: 100%; background: var(--emerald); border-radius: 2px; transition: width 0.1s; }
+.controls { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem; }
+.control-row { display: flex; align-items: center; gap: 0.4rem; font-size: 0.7rem; }
+.control-row label { color: var(--muted); width: 80px; flex-shrink: 0; }
+.control-row input[type="range"] { flex: 1; accent-color: var(--gold); }
+.control-row span { color: var(--emerald); width: 40px; text-align: right; font-size: 0.7rem; }
+button { background: var(--border); border: 1px solid var(--border); color: var(--text); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 0.75rem; width: 100%; }
+button:hover { border-color: var(--gold); color: var(--gold); }
+button.active { background: var(--gold); color: #000; border-color: var(--gold); }
+button.secondary { background: transparent; border-color: var(--border); }
+.math-display { background: #000; padding: 0.4rem; border-radius: 4px; font-size: 0.65rem; font-family: monospace; color: var(--emerald); line-height: 1.4; }
+.phase-bar { display: flex; gap: 2px; margin: 0.3rem 0; }
+.phase-block { flex: 1; height: 16px; border-radius: 2px; transition: background 0.1s; }
+.info-box { background: rgba(136,68,255,0.1); border: 1px solid var(--violet); border-radius: 4px; padding: 0.4rem; font-size: 0.65rem; color: var(--text); line-height: 1.5; margin-top: 0.5rem; }
+.particle-info { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem; font-size: 0.65rem; margin-top: 0.3rem; }
+.particle-info div { padding: 0.2rem; background: rgba(0,0,0,0.3); border-radius: 3px; }
+.footer { text-align: center; color: var(--muted); font-size: 0.6rem; padding: 0.5rem; border-top: 1px solid var(--border); margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>PROTOREALITY</h1>
+<p class="subtitle">N = c × 10000! • 42 Hz Fundamental • Bloom from Nothing • Self-Evolution</p>
+</div>
+
+<div class="layout">
+<canvas id="main"></canvas>
+
+<div class="sidebar">
+
+<div class="section">
+<div class="section-title">Genesis Stats</div>
+<div class="stat-row"><span class="stat-label">Step:</span><span class="stat-value" id="stat-step">0</span></div>
+<div class="stat-row"><span class="stat-label">N (total states):</span><span class="stat-value" id="stat-n">1</span></div>
+<div class="stat-row"><span class="stat-label">Log₁₀(N):</span><span class="stat-value" id="stat-log">0.00</span></div>
+<div class="stat-row"><span class="stat-label">Particles:</span><span class="stat-value" id="stat-particles">0</span></div>
+<div class="stat-row"><span class="stat-label">Lines:</span><span class="stat-value" id="stat-lines">0</span></div>
+<div class="stat-row"><span class="stat-label">Orbs:</span><span class="stat-value" id="stat-orbs">0</span></div>
+<div class="stat-row"><span class="stat-label">Glows:</span><span class="stat-value" id="stat-glows">0</span></div>
+<div class="stat-row"><span class="stat-label">Bloom Phase:</span><span class="stat-value" id="stat-phase">seed</span></div>
+<div class="stat-row"><span class="stat-label">Dimension:</span><span class="stat-value" id="stat-dim">0D</span></div>
+<div class="stat-row"><span class="stat-label">Coherence:</span><span class="stat-value" id="stat-coherence">—</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">Physics Parameters</div>
+<div class="control-row"><label>Growth Rate:</label><input type="range" id="growthSlider" min="1" max="100" value="30"><span id="growthVal">0.30</span></div>
+<div class="control-row"><label>Glow Scale:</label><input type="range" id="glowSlider" min="1" max="100" value="70"><span id="glowVal">0.70</span></div>
+<div class="control-row"><label>Line Density:</label><input type="range" id="lineSlider" min="0" max="100" value="60"><span id="lineVal">0.60</span></div>
+<div class="control-row"><label>Orb Radius:</label><input type="range" id="orbSlider" min="1" max="100" value="40"><span id="orbVal">0.40</span></div>
+<div class="control-row"><label>42 Hz Sync:</label><input type="range" id="phiSlider" min="0" max="100" value="85"><span id="phiVal">0.85</span></div>
+<div class="control-row"><label>Factorial N:</label><input type="range" id="factSlider" min="1" max="100" value="40"><span id="factVal">0.40</span></div>
+</div>
+
+<div class="section">
+<div class="section-title">N = c × 10000!</div>
+<div class="math-display" id="formulaDisplay">
+c = 299,792,458 m/s<br>
+10000! ≈ 10^35,659<br>
+<strong style="color:var(--gold)">N = c × 10000!</strong><br>
+= 10^35,659 × 299,792,458<br>
+<strong style="color:var(--cyan)">log₁₀(N) ≈ 35,659.48</strong>
+</div>
+<div class="info-box">
+Proto-reality emerges when N factorial states collapse into a coherent loop. Each particle you see IS a loop. Lines are phase connections. Orbs are collapsed factorial nodes. Glows are coherence.
+</div>
+</div>
+
+<div class="section">
+<div class="section-title">Harmonic Bloom Phases</div>
+<div class="phase-bar">
+<div class="phase-block" id="phase-seed" style="background:var(--muted)" title="Seed"></div>
+<div class="phase-block" id="phase-lines" title="Lines"></div>
+<div class="phase-block" id="phase-circles" title="Circles"></div>
+<div class="phase-block" id="phase-orbs" title="Orbs"></div>
+<div class="phase-block" id="phase-bloom" title="Bloom"></div>
+<div class="phase-block" id="phase-cohere" title="Cohere"></div>
+</div>
+<div style="font-size:0.6rem;color:var(--muted);display:flex;justify-content:space-between">
+<span>Seed</span><span>Lines</span><span>Circles</span><span>Orbs</span><span>Bloom</span><span>Cohere</span>
+</div>
+</div>
+
+<div class="section">
+<div class="section-title">Active Particles</div>
+<div class="particle-info" id="particleGrid"></div>
+</div>
+
+<div class="section">
+<div class="section-title">Controls</div>
+<div class="controls">
+<button id="btn-start" class="active">▶ Start Bloom</button>
+<button id="btn-pause">⏸ Pause</button>
+<button id="btn-step">Step Once</button>
+<button id="btn-reset" class="secondary">Reset</button>
+</div>
+</div>
+
+<div class="section">
+<div class="section-title">Visualization</div>
+<div class="controls">
+<button id="btn-lines" class="active">Lines</button>
+<button id="btn-orbs" class="active">Orbs</button>
+<button id="btn-glow" class="active">Glows</button>
+<button id="btn-prime">Prime Bloom</button>
+</div>
+</div>
+
+</div>
+</div>
+
+<div class="footer">
+ProtoReality • 42 Hz = c/10000! • Factorial Emergence • Self-Closure • Bloom from Nothing
+</div>
+
+<script>
+// ============================================================
+// CONSTANTS
+// ============================================================
+const PHI = 42; // Hz = c/10,000!
+const TAU = 2 * Math.PI;
+const C = 299792458;
+const LOG10_FACTORIAL_10000 = 35659.4828036; // log10(10000!) ≈ 35659.4828
+const LOG10_N = Math.log10(C) + LOG10_FACTORIAL_10000; // ≈ 35659.48
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  running: false,
+  step: 0,
+  particles: [],
+  lines: [],
+  glows: [],
+  phase: 'seed', // seed -> lines -> circles -> orbs -> bloom -> cohere
+  growthRate: 0.30,
+  glowScale: 0.70,
+  lineDensity: 0.60,
+  orbRadius: 0.40,
+  phiSync: 0.85,
+  factLevel: 0.40,
+  showLines: true,
+  showOrbs: true,
+  showGlows: true,
+  time: 0,
+  // N tracking
+  N: 1,
+  logN: 0,
+};
+
+// ============================================================
+// CANVAS
+// ============================================================
+const canvas = document.getElementById('main');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ============================================================
+// PARTICLE SYSTEM
+// ============================================================
+class Particle {
+  constructor(x, y, type, order) {
+    this.x = x;
+    this.y = y;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = (Math.random() - 0.5) * 0.5;
+    this.type = type; // 'orb', 'glow', 'line-end'
+    this.order = order; // factorial order (0 = first)
+    this.r = 2 + Math.random() * 4 * state.orbRadius;
+    this.baseR = this.r;
+    this.hue = 260 + (order % 12) * 30; // violet to cyan range
+    this.alpha = 0.6 + Math.random() * 0.4;
+    this.phase = Math.random() * TAU;
+    this.pulse = Math.random();
+    this.coherence = 0.5 + Math.random() * 0.5;
+    this.dimension = Math.floor(Math.random() * 4); // 0D=dot, 1D=line, 2D=orb, 3D=glow
+    this.connections = [];
+    this.factOrder = order;
+    this.age = 0;
+  }
+
+  update(dt) {
+    this.age += dt;
+    // Self-attraction toward center (bloom from center)
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const dx = cx - this.x;
+    const dy = cy - this.y;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    
+    // Attraction strength grows with factorial order
+    const attractStrength = 0.001 * (1 + this.factOrder * 0.1);
+    this.vx += dx * attractStrength;
+    this.vy += dy * attractStrength;
+    
+    // 42 Hz sync vibration
+    const phiKick = state.phiSync * Math.sin(TAU * PHI * this.age * 0.001);
+    this.vx += Math.cos(this.phase) * phiKick * 0.1;
+    this.vy += Math.sin(this.phase) * phiKick * 0.1;
+    
+    // Damping
+    this.vx *= 0.98;
+    this.vy *= 0.98;
+    
+    this.x += this.vx;
+    this.y += this.vy;
+    
+    // Pulse at 42 Hz
+    this.pulse = 0.5 + 0.5 * Math.sin(TAU * PHI * this.age * 0.001 + this.phase);
+    this.r = this.baseR * (0.7 + 0.3 * this.pulse);
+    
+    // Wrap at edges
+    if (this.x < 0) this.x = canvas.width;
+    if (this.x > canvas.width) this.x = 0;
+    if (this.y < 0) this.y = canvas.height;
+    if (this.y > canvas.height) this.y = 0;
+  }
+
+  draw() {
+    const coherence = this.coherence;
+    const hue = this.hue + (1 - coherence) * 40; // shift toward gold as coherence drops
+    
+    if (this.type === 'glow') {
+      // Soft glow
+      const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 6);
+      grad.addColorStop(0, `hsla(${hue},80%,70%,${this.alpha * 0.6})`);
+      grad.addColorStop(0.5, `hsla(${hue},60%,50%,${this.alpha * 0.2})`);
+      grad.addColorStop(1, `hsla(${hue},40%,30%,0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 6, 0, TAU);
+      ctx.fill();
+    } else if (this.type === 'orb') {
+      // Orb with soft edge
+      const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 2);
+      grad.addColorStop(0, `hsla(${hue},90%,85%,${this.alpha})`);
+      grad.addColorStop(0.4, `hsla(${hue},70%,60%,${this.alpha * 0.6})`);
+      grad.addColorStop(1, `hsla(${hue},50%,40%,0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 2, 0, TAU);
+      ctx.fill();
+      
+      // Core dot
+      ctx.fillStyle = `hsla(${hue},100%,95%,${this.alpha})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 0.3, 0, TAU);
+      ctx.fill();
+    } else if (this.type === 'line-end') {
+      // Line endpoint
+      ctx.fillStyle = `hsla(${hue},70%,60%,${this.alpha})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 0.5, 0, TAU);
+      ctx.fill();
+    }
+  }
+}
+
+// ============================================================
+// LINE (PHASE CONNECTION)
+// ============================================================
+class ProtoLine {
+  constructor(x1, y1, x2, y2, order) {
+    this.x1 = x1;
+    this.y1 = y1;
+    this.x2 = x2;
+    this.y2 = y2;
+    this.order = order;
+    this.hue = 260 + (order % 12) * 30;
+    this.alpha = 0.1 + Math.random() * 0.2;
+    this.age = 0;
+    this.pulse = 0;
+  }
+
+  update(dt) {
+    this.age += dt;
+    this.pulse = 0.5 + 0.5 * Math.sin(TAU * PHI * this.age * 0.001);
+  }
+
+  draw() {
+    const alpha = this.alpha * (0.3 + 0.7 * this.pulse);
+    ctx.strokeStyle = `hsla(${this.hue},60%,50%,${alpha})`;
+    ctx.lineWidth = 0.5 + this.pulse * 0.5;
+    ctx.beginPath();
+    ctx.moveTo(this.x1, this.y1);
+    ctx.lineTo(this.x2, this.y2);
+    ctx.stroke();
+  }
+}
+
+// ============================================================
+// EMERGENCE ENGINE
+// ============================================================
+function emergeStep() {
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  
+  // Track N (factorial growth)
+  state.N = state.step === 0 ? 1 : Math.floor(state.step * Math.log(state.step + 1) * 10);
+  state.logN = Math.log10(state.N + 1);
+  
+  // Determine phase based on step and N
+  if (state.step < 3) state.phase = 'seed';
+  else if (state.step < 8) state.phase = 'lines';
+  else if (state.step < 20) state.phase = 'circles';
+  else if (state.step < 50) state.phase = 'orbs';
+  else if (state.step < 150) state.phase = 'bloom';
+  else state.phase = 'cohere';
+  
+  // Spawn new particles based on growth rate
+  const spawnCount = Math.floor(state.growthRate * 5) + 1;
+  const maxParticles = 200;
+  
+  if (state.particles.length < maxParticles) {
+    for (let i = 0; i < spawnCount; i++) {
+      if (state.particles.length >= maxParticles) break;
+      
+      // Spawn near center initially, spread out as bloom grows
+      let x, y;
+      if (state.step < 20) {
+        // Near center
+        x = cx + (Math.random() - 0.5) * (20 + state.step * 3);
+        y = cy + (Math.random() - 0.5) * (20 + state.step * 3);
+      } else {
+        // Full canvas spread with center bias
+        const angle = Math.random() * TAU;
+        const radius = (Math.random() ** 0.5) * (canvas.width * 0.45);
+        x = cx + Math.cos(angle) * radius;
+        y = cy + Math.sin(angle) * radius;
+      }
+      
+      // Choose type based on phase
+      let type;
+      const roll = Math.random();
+      if (state.step < 3) {
+        type = 'glow';
+      } else if (state.step < 8) {
+        type = roll < 0.7 ? 'line-end' : 'glow';
+      } else if (state.step < 20) {
+        type = roll < 0.4 ? 'line-end' : (roll < 0.7 ? 'orb' : 'glow');
+      } else if (state.step < 50) {
+        type = roll < 0.3 ? 'orb' : (roll < 0.6 ? 'glow' : 'line-end');
+      } else {
+        type = roll < 0.5 ? 'orb' : (roll < 0.8 ? 'glow' : 'line-end');
+      }
+      
+      state.particles.push(new Particle(x, y, type, state.step));
+    }
+  }
+  
+  // Spawn lines between nearby particles
+  if (state.lineDensity > 0.1 && state.particles.length >= 2) {
+    const lineChance = state.lineDensity * 0.02;
+    if (Math.random() < lineChance) {
+      const a = state.particles[Math.floor(Math.random() * state.particles.length)];
+      const b = state.particles[Math.floor(Math.random() * state.particles.length)];
+      const dx = a.x - b.x;
+      const dy = a.y - b.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 150 && dist > 5) {
+        state.lines.push(new ProtoLine(a.x, a.y, b.x, b.y, state.step));
+      }
+    }
+  }
+  
+  // Limit lines
+  if (state.lines.length > 300) {
+    state.lines = state.lines.slice(-200);
+  }
+  
+  // Update all
+  for (const p of state.particles) p.update(0.016);
+  for (const l of state.lines) l.update(0.016);
+  
+  // Age old lines
+  for (let i = state.lines.length - 1; i >= 0; i--) {
+    state.lines[i].age += 0.016;
+    if (state.lines[i].age > 8) {
+      state.lines.splice(i, 1);
+    }
+  }
+  
+  state.step++;
+  state.time += 0.016;
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+function drawBackground() {
+  ctx.fillStyle = '#040408';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Center glow (where bloom begins)
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 100 + state.step * 2);
+  grad.addColorStop(0, `rgba(136,68,255,${0.08 + state.glowScale * 0.05})`);
+  grad.addColorStop(0.5, `rgba(68,68,136,${0.03 + state.glowScale * 0.02})`);
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+function render() {
+  drawBackground();
+  
+  // Draw lines first (background layer)
+  if (state.showLines) {
+    for (const l of state.lines) l.draw();
+  }
+  
+  // Draw glows behind orbs
+  if (state.showGlows) {
+    for (const p of state.particles) {
+      if (p.type === 'glow') p.draw();
+    }
+  }
+  
+  // Draw orbs
+  if (state.showOrbs) {
+    for (const p of state.particles) {
+      if (p.type === 'orb' || p.type === 'line-end') p.draw();
+    }
+  }
+  
+  // Overlay: N tracking display
+  const cx = canvas.width / 2;
+  ctx.fillStyle = 'rgba(136,68,255,0.8)';
+  ctx.font = '10px Courier New';
+  ctx.textAlign = 'right';
+  ctx.fillText(`N = 10^${state.logN.toFixed(2)}`, canvas.width - 10, canvas.height - 30);
+  ctx.fillText(`step=${state.step}`, canvas.width - 10, canvas.height - 15);
+  
+  // Draw phase name
+  ctx.textAlign = 'left';
+  ctx.fillStyle = 'rgba(255,215,0,0.6)';
+  ctx.font = '11px Courier New';
+  ctx.fillText(state.phase.toUpperCase(), 10, canvas.height - 15);
+}
+
+// ============================================================
+// UPDATE UI
+// ============================================================
+function updateUI() {
+  document.getElementById('stat-step').textContent = state.step;
+  document.getElementById('stat-n').textContent = state.N.toLocaleString();
+  document.getElementById('stat-log').textContent = state.logN.toFixed(2);
+  document.getElementById('stat-particles').textContent = state.particles.length;
+  document.getElementById('stat-lines').textContent = state.lines.length;
+  document.getElementById('stat-orbs').textContent = state.particles.filter(p => p.type === 'orb').length;
+  document.getElementById('stat-glows').textContent = state.particles.filter(p => p.type === 'glow').length;
+  document.getElementById('stat-phase').textContent = state.phase;
+  
+  // Dimension
+  const avgDim = state.particles.length > 0 
+    ? (state.particles.reduce((s, p) => s + p.dimension, 0) / state.particles.length).toFixed(1)
+    : '0';
+  document.getElementById('stat-dim').textContent = avgDim + 'D';
+  
+  // Coherence
+  const coherence = state.particles.length > 0
+    ? (state.particles.reduce((s, p) => s + p.coherence, 0) / state.particles.length)
+    : 0;
+  document.getElementById('stat-coherence').textContent = (coherence * 100).toFixed(1) + '%';
+  
+  // Phase blocks
+  const phases = ['seed', 'lines', 'circles', 'orbs', 'bloom', 'cohere'];
+  const phaseColors = ['#6a6a8a', '#8844ff', '#44aaff', '#00ff88', '#ffd700', '#ffffff'];
+  for (let i = 0; i < phases.length; i++) {
+    const block = document.getElementById('phase-' + phases[i]);
+    if (block) {
+      const active = phases.indexOf(state.phase) >= i;
+      block.style.background = active ? phaseColors[i] : 'var(--border)';
+    }
+  }
+  
+  // Particle grid
+  const grid = document.getElementById('particleGrid');
+  const show = state.particles.slice(-8);
+  grid.innerHTML = show.map((p, i) => {
+    const hue = p.hue + (1 - p.coherence) * 40;
+    const typeLabel = p.type === 'glow' ? '🌫' : p.type === 'orb' ? '🔵' : '⚫';
+    return `<div style="color:hsl(${hue},70%,70%)">${typeLabel} #${state.step - show.length + i + 1} ɸ=${p.pulse.toFixed(2)}</div>`;
+  }).join('');
+}
+
+// ============================================================
+// MAIN LOOP
+// ============================================================
+let lastTime = 0;
+function loop(timestamp) {
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+  lastTime = timestamp;
+  
+  if (state.running) {
+    const stepsPerFrame = Math.ceil(state.growthRate * 3);
+    for (let i = 0; i < stepsPerFrame; i++) {
+      emergeStep();
+    }
+  }
+  
+  render();
+  updateUI();
+  requestAnimationFrame(loop);
+}
+
+// ============================================================
+// CONTROLS
+// ============================================================
+document.getElementById('btn-start').addEventListener('click', function() {
+  state.running = true;
+  this.classList.add('active');
+  document.getElementById('btn-pause').classList.remove('active');
+});
+
+document.getElementById('btn-pause').addEventListener('click', function() {
+  state.running = false;
+  this.classList.add('active');
+  document.getElementById('btn-start').classList.remove('active');
+});
+
+document.getElementById('btn-step').addEventListener('click', function() {
+  emergeStep();
+});
+
+document.getElementById('btn-reset').addEventListener('click', function() {
+  state.running = false;
+  state.step = 0;
+  state.particles = [];
+  state.lines = [];
+  state.N = 1;
+  state.logN = 0;
+  state.time = 0;
+  state.phase = 'seed';
+  document.getElementById('btn-pause').classList.add('active');
+  document.getElementById('btn-start').classList.remove('active');
+});
+
+document.getElementById('btn-lines').addEventListener('click', function() {
+  state.showLines = !state.showLines;
+  this.classList.toggle('active', state.showLines);
+});
+
+document.getElementById('btn-orbs').addEventListener('click', function() {
+  state.showOrbs = !state.showOrbs;
+  this.classList.toggle('active', state.showOrbs);
+});
+
+document.getElementById('btn-glow').addEventListener('click', function() {
+  state.showGlows = !state.showGlows;
+  this.classList.toggle('active', state.showGlows);
+});
+
+document.getElementById('btn-prime').addEventListener('click', function() {
+  // Prime bloom: spawn at prime harmonic frequencies of 42
+  const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
+  const prime = primes[Math.floor(Math.random() * primes.length)];
+  const freq = PHI * prime;
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  
+  for (let i = 0; i < 5; i++) {
+    const angle = (i / 5) * TAU + state.time;
+    const r = 20 + Math.random() * 30;
+    const x = cx + Math.cos(angle) * r;
+    const y = cy + Math.sin(angle) * r;
+    const p = new Particle(x, y, 'orb', state.step);
+    p.hue = (260 + prime * 20) % 360;
+    p.factOrder = prime;
+    state.particles.push(p);
+  }
+});
+
+// Sliders
+function setupSlider(id, valId, key, decimals = 2) {
+  const slider = document.getElementById(id);
+  const val = document.getElementById(valId);
+  val.textContent = (slider.value / 100).toFixed(decimals);
+  slider.addEventListener('input', function() {
+    state[key] = this.value / 100;
+    val.textContent = (this.value / 100).toFixed(decimals);
+  });
+}
+
+setupSlider('growthSlider', 'growthVal', 'growthRate');
+setupSlider('glowSlider', 'glowVal', 'glowScale');
+setupSlider('lineSlider', 'lineVal', 'lineDensity');
+setupSlider('orbSlider', 'orbVal', 'orbRadius');
+setupSlider('phiSlider', 'phiVal', 'phiSync');
+setupSlider('factSlider', 'factVal', 'factLevel');
+
+// ============================================================
+// INIT
+// ============================================================
+// Seed with a glow particle
+state.particles.push(new Particle(canvas.width/2, canvas.height/2, 'glow', 0));
+state.particles[0].alpha = 1;
+state.particles[0].r = 8;
+state.particles[0].coherence = 1;
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Framework</title>
+  <style>
+    :root {
+      --bg: #0a0a12;
+      --surface: #12121e;
+      --border: #2a2a3e;
+      --text: #e8e8f0;
+      --muted: #8888aa;
+      --accent: #9966ff;
+      --highlight: #44dd88;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    p.description {
+      font-size: 1rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      max-width: 600px;
+    }
+    .links {
+      /* Stack cards vertically */
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      align-items: center;
+      width: 100%;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem 1.5rem;
+      /* Take full width up to a comfortable max to accommodate long descriptions */
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+    .card h2 {
+      font-size: 1.3rem;
+      color: var(--highlight);
+      margin-bottom: 0.75rem;
+    }
+    .card p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+    .card a {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .card a:hover {
+      background: var(--accent);
+      color: var(--bg);
+    }
+    footer {
+      margin-top: 3rem;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <h1>The Framework</h1>
+  <p class="description">
+    Explore foundational principles of the universe, delve into consciousness and
+    discover hands‑on simulations. Select a module below to begin your journey.
+  </p>
+  <div class="links">
+    <div class="card">
+      <h2>Explanation of Everything</h2>
+      <p>Uncover the invariance framework, core postulates and a complete table of phenomena.</p>
+      <a href="framework.html">Read more</a>
+    </div>
+    <div class="card">
+      <h2>Consciousness & Applications</h2>
+      <p>Investigate consciousness through photon coherence and explore far‑reaching engineering predictions.</p>
+      <a href="consciousnessnengineering.html">Read more</a>
+    </div>
+      <!-- Additional modules -->
+      <div class="card">
+        <h2>Harmonic Framework</h2>
+        <p>Discover the universal scale anchored at 42&nbsp;Hz, where Planck units, primes and brainwaves converge into a single harmonic universe.</p>
+        <a href="harmonics.html">Explore harmonics</a>
+      </div>
+      <div class="card">
+        <h2>Harmonic Visualizer</h2>
+        <p>Interactively visualize and manipulate harmonic waves, spirals and manifestation metrics to explore projection, coherence and loop dynamics.</p>
+        <a href="harmonicsvisualizer.html">Try the visualizer</a>
+      </div>
+
+      <!-- Spiral visualizer card: placed with other visualizers -->
+      <div class="card">
+        <h2>Spiral Visualizer</h2>
+        <p>Explore the genesis spiral with golden‑ratio recursion; adjust iterations and probe time slices to observe phase, energy and coherence signatures.</p>
+        <a href="spiral.html">See the spiral</a>
+      </div>
+      <div class="card">
+        <h2>Multiverse Physics Simulator</h2>
+        <p>Experiment with gravitational orbits, photons and particle fields across alternate universes by tuning constants like <i>c</i>, <i>G</i> and &alpha;.</p>
+        <a href="physics_simulator.html">Run the simulator</a>
+      </div>
+      <div class="card">
+        <h2>ProtoReality</h2>
+        <p>Watch a universe bloom from factorial states&mdash;control growth, glow and density as you guide the phases from seed to coherence.</p>
+        <a href="ProtoReality.html">Start the bloom</a>
+      </div>
+      <div class="card">
+        <h2>Soul Frequency Synthesizer</h2>
+        <p>Generate and mix fundamental and prime harmonics in multiple channels; tune frequencies and gain to craft your own soul soundscape.</p>
+        <a href="synthesizer.html">Open the synthesizer</a>
+      </div>
+  </div>
+  <footer>
+    <p>© 2026 The Framework. All rights reserved.</p>
+  </footer>
+</body>
+</html>
