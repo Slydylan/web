@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dimensionless Harmonic Ratios</title><style>
+:root{--bg:#080912;--panel:#121628;--text:#eef1ff;--muted:#9ba5c5;--accent:#82ffd8;--border:#2c3557}*{box-sizing:border-box}body{margin:0;background:#080912;color:var(--text);font:16px/1.65 system-ui,-apple-system,Segoe UI,sans-serif}main{max-width:980px;margin:auto;padding:38px 20px}.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:22px;margin:16px 0}a{color:var(--accent)}h1{font-size:clamp(2.2rem,6vw,4.4rem);line-height:1.05;margin:.2em 0}h2{color:var(--accent)}pre{white-space:pre-wrap;background:#050711;border:1px solid #25304f;border-radius:14px;padding:16px}table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid var(--border);padding:10px;text-align:left}</style></head><body><main>
+<a href="index.html">← Home</a>
+<h1>Dimensionless Harmonic Ratios</h1>
+<p>The harmonic layer is now ratio-based. A frequency in hertz is an implementation choice for sound output, not a universal constant. The invariant object is the ratio.</p>
+<div class="card"><h2>Core representation</h2><pre>base phase tick: ω₀ = 1
+harmonic n:      ω_n = nω₀
+phase update:    θ ← wrap(θ + ω_n Δτ)
+ratio:           ρ = ω_a/ω_b</pre></div>
+<div class="card"><h2>Prime ratios</h2><table><tr><th>Prime</th><th>Ratio</th><th>Role in the map</th></tr><tr><td>2</td><td>2:1</td><td>binary split / octave relation</td></tr><tr><td>3</td><td>3:2 or 3:1</td><td>triadic closure / braid candidate</td></tr><tr><td>5</td><td>5:4 or 5:3</td><td>pentagonal/aperiodic interference check</td></tr><tr><td>7</td><td>7:4 or 7:5</td><td>higher-order mismatch and novelty pressure</td></tr></table></div>
+<div class="card"><h2>What changed</h2><p>The previous fixed-frequency story has been retired. Harmonics are useful as normalized phase ratios for search, visualization, audio rendering, and commit scoring. They are not evidence for a special physical resonance unless measured independently.</p></div>
+</main></body></html>

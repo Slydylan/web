@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Emergent Programming Origin Map</title><style>
+:root{--bg:#070912;--panel:#111526;--panel2:#151b31;--text:#edf1ff;--muted:#9da6c4;--accent:#82ffd8;--violet:#b895ff;--warn:#ffd36b;--border:#2c3557}*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#11172d,#070912 42%);color:var(--text);font:16px/1.65 system-ui,-apple-system,Segoe UI,sans-serif}main{max-width:1100px;margin:auto;padding:36px 20px 70px}.nav{margin:0 0 24px}a{color:var(--accent)}h1{font-size:clamp(2.3rem,6vw,5rem);line-height:1.02;margin:.1em 0 .25em;letter-spacing:-.04em}h2{color:var(--accent);margin:0 0 10px}h3{color:var(--violet);margin:22px 0 8px}.lead{font-size:1.2rem;color:#cdd5ef;max-width:850px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card{background:rgba(17,21,38,.9);border:1px solid var(--border);border-radius:18px;padding:22px;margin:16px 0;box-shadow:0 24px 80px rgba(0,0,0,.22)}.pill{display:inline-block;border:1px solid var(--accent);border-radius:999px;padding:4px 11px;font-size:.85rem;color:var(--accent);margin:0 6px 8px 0}pre{white-space:pre-wrap;background:#050712;border:1px solid #25304f;border-radius:14px;padding:16px;overflow:auto}.warn{border-color:rgba(255,211,107,.42);color:var(--warn)}table{width:100%;border-collapse:collapse;margin-top:10px}td,th{border-bottom:1px solid var(--border);padding:10px;text-align:left;vertical-align:top}th{color:var(--accent)}.small{color:var(--muted);font-size:.93rem}</style></head><body><main>
+<div class="nav"><a href="index.html">← Home</a> · <a href="formulas.html">Formula ledger</a> · <a href="ProtoReality.html">Visualizer</a></div>
+<span class="pill">pivot complete</span><span class="pill">c = 1</span><span class="pill warn">speculative, not established physics</span>
+<h1>Emergent Programming / Speculative Origin Map</h1>
+<p class="lead">The project is now framed as a browser-runnable origin map: a seed-address substrate, a small set of dimensionless update operators, and a commit loop that lets patterns become reusable programs. The old SI numerology has been removed from the core. Universality starts at c=1.</p>
+<div class="card"><h2>Hard reset: natural units</h2><pre>c = G = ħ = k_B = 1</pre><p>No fixed light-speed number, no privileged biological or audio frequency, and no claim that a special SI value is the source of physics. Frequency is represented as dimensionless phase advance per tick: <code>ω = Δθ/Δτ</code>.</p></div>
+<div class="grid">
+<section class="card"><h2>1. Address substrate</h2><p>Everything begins as an addressable seed. A hash does not prove physics; it gives deterministic reproducibility for experiments.</p><pre>H = BLAKE2b(seed, context)
+n_i ∈ {0,...,15}</pre></section>
+<section class="card"><h2>2. Phase projection</h2><p>Each address is projected into phase slots and amplitudes.</p><pre>A_i = n_i/15
+θ_i = 2πn_i/15</pre></section>
+<section class="card"><h2>3. Operators</h2><p>Operators are small transformations that can be tested, saved, replayed, and compared.</p><pre>mix(a,b,t)
+wrap(θ)
+score(candidate)
+commit(candidate)</pre></section>
+<section class="card"><h2>4. Memory commits</h2><p>A candidate becomes part of the living program only when it improves compression, prediction, or downstream coherence.</p><pre>accept iff Δscore &gt; threshold
+archive rejected candidates with provenance</pre></section>
+</div>
+<div class="card"><h2>What “origin map” means now</h2><table><tr><th>Layer</th><th>Definition</th><th>Observable requirement</th></tr><tr><td>Seed</td><td>Initial address and deterministic entropy source.</td><td>Same seed must reproduce same run.</td></tr><tr><td>Phase</td><td>Dimensionless angular state.</td><td>Formula maps must be published.</td></tr><tr><td>Search</td><td>Candidate generation over operators and memory.</td><td>Report candidate counts and rejected alternatives.</td></tr><tr><td>Commit</td><td>Selection of stable reusable artifacts.</td><td>Show score delta versus baseline.</td></tr><tr><td>Program</td><td>Committed artifact that can run as an object in the browser.</td><td>Save/import must preserve behavior.</td></tr></table></div>
+<div class="card"><h2>Credibility rules</h2><p>For physicists or technical reviewers, terminal output is not evidence. Every script should publish:</p><pre>1. variables and units
+2. formulas
+3. input parameters
+4. numerical method
+5. output values
+6. comparison baseline
+7. failure cases</pre><p class="small">The formula ledger page and the <code>--formulas</code> command in <code>iv.py</code> and <code>gravity.py</code> implement the first pass.</p></div>
+<div class="card"><h2>Current scientific claim boundary</h2><p>This is a speculative computational framework. It may become useful as an emergent-programming environment, a visual search substrate, or a compression/provenance experiment. It should not be marketed as a replacement for established physics unless it produces novel predictions with independent measurements.</p></div>
+</main></body></html>
